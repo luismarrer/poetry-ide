@@ -84,6 +84,16 @@ class MetricGutterMarker extends GutterMarker {
         sylBadge.textContent = String(count);
         sylBadge.title = `${count} sílabas métricas`;
       }
+    } else if (!this.isSpacer && this.verse?.isComment) {
+      numSpan.className += ' opacity-40';
+      sylBadge.className += ' poetry-gutter-comment';
+      sylBadge.textContent = '//';
+      sylBadge.title = 'Anotación / Comentario (no computa como verso)';
+    } else if (!this.isSpacer && this.verse?.isHeading) {
+      numSpan.className += ' font-bold text-indigo-500';
+      sylBadge.className += ' poetry-gutter-heading';
+      sylBadge.textContent = '#'.repeat(Math.min(3, this.verse.headingLevel || 1));
+      sylBadge.title = 'Título / Encabezado (no computa como verso)';
     } else if (this.isSpacer) {
       sylBadge.textContent = '11 ✓';
     } else {

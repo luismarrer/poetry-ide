@@ -17,6 +17,10 @@ export interface VerseAnalysis {
   lineIndex: number
   text: string
   isEmpty: boolean
+  isComment?: boolean
+  isHeading?: boolean
+  headingLevel?: number
+  inlineComment?: string
   grammaticalSyllables: number
   words: WordAnalysis[]
   synalephas: SynalephaJunction[]
@@ -56,13 +60,97 @@ export function analyzeVerse(
     };
   }
 
-  // 1. Tokenize line into words
-  const tokens = tokenizeVerse(text);
+  // Check if line is entirely a comment (// or %)
+  if (trimmed.startsWith('//') || trimmed.startsWith('%')) {
+    return {
+      lineIndex,
+      text,
+      isEmpty: true,
+      isComment: true,
+      grammaticalSyllables: 0,
+      words: [],
+      synalephas: [],
+      finalStress: 'llana',
+      finalStressAdjustment: 0,
+      metricSyllables: 0,
+      algorithmMetricSyllables: 0,
+      rhythmicAccents: [],
+      diagnostics: [],
+    };
+  }
+
+  // Check if line is a heading/title (# Titulo or ## Seccion)
+  if (trimmed.startsWith('#')) {
+    const match = trimmed.match(/^(#{1,6})\s+(.*)$/);
+    if (match) {
+      return {
+        lineIndex,
+        text,
+        isEmpty: true,
+        isHeading: true,
+        headingLevel: match[1].length,
+        grammaticalSyllables: 0,
+        words: [],
+        synalephas: [],
+        finalStress: 'llana',
+        finalStressAdjustment: 0,
+        metricSyllables: 0,
+        algorithmMetricSyllables: 0,
+        rhythmicAccents: [],
+        diagnostics: [],
+      };
+    }
+  }
+
+  // Check for inline comments (e.g., "verso aqui // comentario")
+  let verseTextToAnalyze = text;
+  let inlineComment: string | undefined = undefined;
+
+  const slashCommentIdx = text.indexOf('//');
+  const percentCommentIdx = text.indexOf(' %');
+
+  let commentCutIdx = -1;
+  if (slashCommentIdx !== -1 && percentCommentIdx !== -1) {
+    commentCutIdx = Math.min(slashCommentIdx, percentCommentIdx + 1);
+  } else if (slashCommentIdx !== -1) {
+    commentCutIdx = slashCommentIdx;
+  } else if (percentCommentIdx !== -1) {
+    commentCutIdx = percentCommentIdx + 1;
+  }
+
+  if (commentCutIdx !== -1) {
+    verseTextToAnalyze = text.slice(0, commentCutIdx);
+    inlineComment = text.slice(commentCutIdx).trim();
+  }
+
+  const trimmedVerseText = verseTextToAnalyze.trim();
+  if (trimmedVerseText.length === 0) {
+    return {
+      lineIndex,
+      text,
+      isEmpty: true,
+      isComment: true,
+      inlineComment,
+      grammaticalSyllables: 0,
+      words: [],
+      synalephas: [],
+      finalStress: 'llana',
+      finalStressAdjustment: 0,
+      metricSyllables: 0,
+      algorithmMetricSyllables: 0,
+      rhythmicAccents: [],
+      diagnostics: [],
+    };
+  }
+
+  // 1. Tokenize line into words (excluding inline comments)
+  const tokens = tokenizeVerse(verseTextToAnalyze);
   if (tokens.length === 0) {
     return {
       lineIndex,
       text,
       isEmpty: true,
+      inlineComment,
       grammaticalSyllables: 0,
       words: [],
       synalephas: [],
@@ -126,6 +214,7 @@ export function analyzeVerse(
     lineIndex,
     text,
     isEmpty: false,
+    inlineComment,
     grammaticalSyllables,
     words,
     synalephas,

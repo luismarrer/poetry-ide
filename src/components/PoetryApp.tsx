@@ -7,12 +7,13 @@ import { VerseInspector } from './inspector/VerseInspector';
 import { TopBar } from './topbar/TopBar';
 import { StatusBar } from './statusbar/StatusBar';
 import { PoemStatsModal } from './stats/PoemStatsModal';
-import { SAMPLE_POEMS } from '@/data/samplePoems';
+import { SAMPLE_POEMS, SAMPLE_TITLES } from '@/data/samplePoems';
 
 const STORAGE_KEY = 'poetry_ide_state_v1';
 
 export const PoetryApp: React.FC = () => {
   // 1. Core State
+  const [title, setTitle] = useState<string>(SAMPLE_TITLES.userCorpus);
   const [text, setText] = useState<string>(SAMPLE_POEMS.userCorpus);
   const [formId, setFormId] = useState<FormId>('silva');
   const [overrides, setOverrides] = useState<PoemOverrides>({});
@@ -29,6 +30,7 @@ export const PoetryApp: React.FC = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (typeof parsed.title === 'string') setTitle(parsed.title);
         if (typeof parsed.text === 'string') setText(parsed.text);
         if (parsed.formId === 'libre' || parsed.formId === 'silva') setFormId(parsed.formId);
         if (parsed.overrides) setOverrides(parsed.overrides);
@@ -52,6 +54,7 @@ export const PoetryApp: React.FC = () => {
     if (!isLoaded) return;
     try {
       const payload = {
+        title,
         text,
         formId,
         overrides,
@@ -63,7 +66,7 @@ export const PoetryApp: React.FC = () => {
     } catch {
       // ignore storage errors
     }
-  }, [text, formId, overrides, showSynalephas, showRhyme, theme, isLoaded]);
+  }, [title, text, formId, overrides, showSynalephas, showRhyme, theme, isLoaded]);
 
   // 4. Sync theme class on HTML document
   useEffect(() => {
@@ -135,6 +138,7 @@ export const PoetryApp: React.FC = () => {
   const handleLoadSample = useCallback((key: string) => {
     const sample = SAMPLE_POEMS[key];
     if (typeof sample === 'string') {
+      setTitle(SAMPLE_TITLES[key] ?? '');
       setText(sample);
       setOverrides({});
       setActiveLineIndex(0);
@@ -149,6 +153,7 @@ export const PoetryApp: React.FC = () => {
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] select-text">
       {/* Top Bar */}
       <TopBar
+        title={title}
         formId={formId}
         onFormChange={setFormId}
         showSynalephas={showSynalephas}
@@ -166,6 +171,8 @@ export const PoetryApp: React.FC = () => {
         {/* Editor Area */}
         <main className="flex-1 h-full min-w-0 overflow-hidden relative">
           <PoetryEditor
+            title={title}
+            onTitleChange={setTitle}
             value={text}
             onChange={setText}
             verses={analysis.verses}
@@ -197,6 +204,7 @@ export const PoetryApp: React.FC = () => {
 
       {/* Stats Modal */}
       <PoemStatsModal
+        title={title}
         isOpen={isStatsOpen}
         onClose={() => setIsStatsOpen(false)}
         formId={formId}

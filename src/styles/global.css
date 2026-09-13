@@ -367,3 +367,33 @@
 .dark .synalepha-decoration::after {
   color: #818cf8;
 }
+
+/* Comments & Headings in Editor & Gutter */
+.cm-poetry-comment {
+  color: var(--text-muted) !important;
+  font-style: italic !important;
+  opacity: 0.75;
+}
+
+.cm-poetry-heading {
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+}
+
+.poetry-gutter-comment {
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.poetry-gutter-heading {
+  color: #4f46e5;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.dark .poetry-gutter-heading {
+  color: #818cf8;
+}

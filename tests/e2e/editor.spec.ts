@@ -144,4 +144,44 @@ test.describe('Poetry IDE E2E Suite', () => {
     await page.locator('[data-testid="stats-modal-backdrop"]').click({ position: { x: 10, y: 10 } });
     await expect(modal).not.toBeVisible();
   });
+
+  test('supports poem title input, comments, and in-text headings', async ({ page }) => {
+    // Select blank canvas
+    await page.selectOption('[data-testid="sample-poems-select"]', 'blank');
+
+    // Test poem title input
+    const titleInput = page.locator('[data-testid="poem-title-input"]');
+    await expect(titleInput).toBeVisible();
+    await titleInput.fill('Canto a la noche');
+
+    // Check that title persists in localStorage
+    const storedState = await page.evaluate(() => {
+      const raw = localStorage.getItem('poetry_ide_state_v1');
+      return raw ? JSON.parse(raw) : null;
+    });
+    expect(storedState?.title).toBe('Canto a la noche');
+
+    // Focus editor and write comment line, heading line, and verse
+    const editor = page.locator('.cm-content');
+    await editor.click();
+    await page.keyboard.insertText('// Borrador inicial de versos\n');
+    await page.keyboard.insertText('# Estrofa I\n');
+    await page.keyboard.insertText('Escribo verso feo');
+
+    // Verify gutter for comment (line 1), heading (line 2), and verse (line 3)
+    const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
+    await expect(gutterItems.nth(0)).toContainText('//');
+    await expect(gutterItems.nth(1)).toContainText('#');
+    await expect(gutterItems.nth(2)).toContainText('7 ✓');
+
+    // Click on comment line (line 1) and verify inspector
+    await page.locator('.cm-line', { hasText: 'Borrador inicial' }).click();
+    const inspector = page.locator('[data-testid="verse-inspector"]');
+    await expect(inspector).toContainText('Anotación / Comentario');
+    await expect(inspector).toContainText('Línea excluida del análisis poético');
+
+    // Click on heading line (line 2) and verify inspector
+    await page.locator('.cm-line', { hasText: 'Estrofa I' }).click();
+    await expect(inspector).toContainText('Título / Encabezado');
+  });
 });

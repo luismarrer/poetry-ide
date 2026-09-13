@@ -38,7 +38,86 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
   onSetManualCount,
   onResetVerseOverrides,
 }) => {
-  if (!verse || verse.isEmpty) {
+  if (!verse) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)] border-l border-[var(--border-color)] bg-[var(--bg-surface)]">
+        <Sparkles className="w-8 h-8 mb-3 opacity-40" />
+        <p className="font-medium text-sm">Coloca el cursor en un verso para inspeccionar su análisis prosódico y métrico.</p>
+      </div>
+    );
+  }
+
+  // Specialized view for comment lines
+  if (verse.isComment) {
+    return (
+      <aside
+        className="h-full overflow-y-auto border-l border-[var(--border-color)] bg-[var(--bg-surface)] p-6 flex flex-col gap-6 text-sm"
+        data-testid="verse-inspector"
+      >
+        <div className="pb-3 border-b border-[var(--border-color)]">
+          <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)]">
+            Línea {verse.lineIndex + 1}
+          </span>
+          <h2 className="text-lg font-bold text-[var(--text-secondary)]">
+            Anotación / Comentario
+          </h2>
+        </div>
+
+        <blockquote className="font-mono text-sm italic text-[var(--text-muted)] bg-[var(--bg-primary)] p-3 rounded-md border border-[var(--border-color)] break-words">
+          {verse.text}
+        </blockquote>
+
+        <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] leading-relaxed space-y-2.5">
+          <p className="font-medium text-[var(--text-primary)]">
+            Línea excluida del análisis poético
+          </p>
+          <p>
+            Las líneas que comienzan con <code className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">//</code> o <code className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">%</code> funcionan como notas de autor o comentarios de borrador.
+          </p>
+          <p>
+            No computan en el conteo silábico, ni en la rima, ni en las reglas de forma de la silva.
+          </p>
+          <p className="text-[11px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-color)]">
+            Atajo: puedes comentar o descomentar versos con <kbd className="font-mono bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded border border-[var(--border-color)]">Cmd + /</kbd> (o <kbd className="font-mono bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded border border-[var(--border-color)]">Ctrl + /</kbd>).
+          </p>
+        </div>
+      </aside>
+    );
+  }
+
+  // Specialized view for heading lines
+  if (verse.isHeading) {
+    return (
+      <aside
+        className="h-full overflow-y-auto border-l border-[var(--border-color)] bg-[var(--bg-surface)] p-6 flex flex-col gap-6 text-sm"
+        data-testid="verse-inspector"
+      >
+        <div className="pb-3 border-b border-[var(--border-color)]">
+          <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)]">
+            Línea {verse.lineIndex + 1}
+          </span>
+          <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+            Título / Encabezado
+          </h2>
+        </div>
+
+        <blockquote className="font-serif text-lg font-bold text-[var(--text-primary)] bg-[var(--bg-primary)] p-3 rounded-md border border-[var(--border-color)] break-words">
+          {verse.text}
+        </blockquote>
+
+        <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)] leading-relaxed space-y-2">
+          <p className="font-medium text-[var(--text-primary)]">
+            Encabezado de sección o estrofa
+          </p>
+          <p>
+            Las líneas que comienzan con <code className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">#</code> organizan títulos y partes del poema sin alterar el cómputo de versos.
+          </p>
+        </div>
+      </aside>
+    );
+  }
+
+  if (verse.isEmpty) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)] border-l border-[var(--border-color)] bg-[var(--bg-surface)]">
         <Sparkles className="w-8 h-8 mb-3 opacity-40" />
@@ -87,9 +166,16 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
       </div>
 
       {/* Quote */}
-      <blockquote className="font-poetry text-base italic text-[var(--text-primary)] bg-[var(--bg-primary)] p-3 rounded-md border border-[var(--border-color)]">
-        “{verse.text}”
-      </blockquote>
+      <div className="flex flex-col gap-1.5">
+        <blockquote className="font-poetry text-base italic text-[var(--text-primary)] bg-[var(--bg-primary)] p-3 rounded-md border border-[var(--border-color)] break-words">
+          “{verse.text}”
+        </blockquote>
+        {verse.inlineComment && (
+          <div className="text-xs font-mono italic text-[var(--text-muted)] px-3 py-1.5 bg-[var(--bg-primary)] rounded border border-[var(--border-color)]/60">
+            Nota: {verse.inlineComment}
+          </div>
+        )}
+      </div>
 
       {/* Metric comparison if overrides exist */}
       {hasDifferences && (

@@ -3,6 +3,7 @@ import type { FormId } from '@/poetry/forms/types';
 import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen, Music } from 'lucide-react';
 
 interface TopBarProps {
+  title?: string
   formId: FormId
   onFormChange: (formId: FormId) => void
   showSynalephas: boolean
@@ -16,6 +17,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
+  title,
   formId,
   onFormChange,
   showSynalephas,
@@ -35,8 +37,13 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Feather className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </div>
         <div>
-          <h1 className="text-xs sm:text-sm font-bold tracking-tight text-[var(--text-primary)] whitespace-nowrap">
+          <h1 className="text-xs sm:text-sm font-bold tracking-tight text-[var(--text-primary)] whitespace-nowrap flex items-center gap-1.5">
             Poetry IDE
+            {title && (
+              <span className="hidden md:inline font-normal text-[var(--text-muted)] text-xs font-serif truncate max-w-[150px]">
+                / {title}
+              </span>
+            )}
           </h1>
           <p className="hidden sm:block text-[10px] text-[var(--text-muted)] -mt-0.5 whitespace-nowrap">
             Métrica prosódica en tiempo real

@@ -4,6 +4,7 @@ import type { FormId } from '@/poetry/forms/types';
 import { X, BarChart3 } from 'lucide-react';
 
 interface PoemStatsModalProps {
+  title?: string
   isOpen: boolean
   onClose: () => void
   formId: FormId
@@ -11,6 +12,7 @@ interface PoemStatsModalProps {
 }
 
 export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
+  title,
   isOpen,
   onClose,
   formId,
@@ -62,7 +64,14 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="text-base font-bold">Estadísticas Poéticas</h2>
+            <div>
+              <h2 className="text-base font-bold">Estadísticas Poéticas</h2>
+              {title && (
+                <p className="text-xs text-[var(--text-muted)] font-serif italic">
+                  {title}
+                </p>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
