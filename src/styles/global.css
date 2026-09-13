@@ -180,84 +180,159 @@
 
 .poetry-gutter-rhyme-matched {
   font-weight: 600;
-}
-
-/* Specific rhyme letter harmonies */
-.poetry-gutter-rhyme-A {
-  background-color: rgba(16, 185, 129, 0.12);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-.dark .poetry-gutter-rhyme-A {
-  background-color: rgba(16, 185, 129, 0.18);
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.3);
-}
-
-.poetry-gutter-rhyme-B {
   background-color: rgba(99, 102, 241, 0.12);
   color: #4f46e5;
   border: 1px solid rgba(99, 102, 241, 0.25);
 }
-.dark .poetry-gutter-rhyme-B {
+.dark .poetry-gutter-rhyme-matched {
   background-color: rgba(129, 140, 248, 0.18);
   color: #a5b4fc;
   border-color: rgba(129, 140, 248, 0.3);
 }
 
-.poetry-gutter-rhyme-C {
+/* Specific rhyme letter harmonies & cyclic palette (12 distinct hues covering A-Z) */
+/* Group 0: Emerald (A, M, Y) */
+.poetry-gutter-rhyme-A, .poetry-gutter-rhyme-M, .poetry-gutter-rhyme-Y, .poetry-gutter-rhyme-c0 {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.dark .poetry-gutter-rhyme-A, .dark .poetry-gutter-rhyme-M, .dark .poetry-gutter-rhyme-Y, .dark .poetry-gutter-rhyme-c0 {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+/* Group 1: Indigo (B, N, Z) */
+.poetry-gutter-rhyme-B, .poetry-gutter-rhyme-N, .poetry-gutter-rhyme-Z, .poetry-gutter-rhyme-c1 {
+  background-color: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+.dark .poetry-gutter-rhyme-B, .dark .poetry-gutter-rhyme-N, .dark .poetry-gutter-rhyme-Z, .dark .poetry-gutter-rhyme-c1 {
+  background-color: rgba(129, 140, 248, 0.18);
+  color: #a5b4fc;
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+/* Group 2: Amber (C, O) */
+.poetry-gutter-rhyme-C, .poetry-gutter-rhyme-O, .poetry-gutter-rhyme-c2 {
   background-color: rgba(245, 158, 11, 0.12);
   color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
-.dark .poetry-gutter-rhyme-C {
+.dark .poetry-gutter-rhyme-C, .dark .poetry-gutter-rhyme-O, .dark .poetry-gutter-rhyme-c2 {
   background-color: rgba(245, 158, 11, 0.18);
   color: #fbbf24;
   border-color: rgba(251, 191, 36, 0.3);
 }
 
-.poetry-gutter-rhyme-D {
+/* Group 3: Rose (D, P) */
+.poetry-gutter-rhyme-D, .poetry-gutter-rhyme-P, .poetry-gutter-rhyme-c3 {
   background-color: rgba(244, 63, 94, 0.12);
   color: #e11d48;
   border: 1px solid rgba(244, 63, 94, 0.25);
 }
-.dark .poetry-gutter-rhyme-D {
+.dark .poetry-gutter-rhyme-D, .dark .poetry-gutter-rhyme-P, .dark .poetry-gutter-rhyme-c3 {
   background-color: rgba(244, 63, 94, 0.18);
   color: #fb7185;
   border-color: rgba(251, 113, 133, 0.3);
 }
 
-.poetry-gutter-rhyme-E {
+/* Group 4: Purple (E, Q) */
+.poetry-gutter-rhyme-E, .poetry-gutter-rhyme-Q, .poetry-gutter-rhyme-c4 {
   background-color: rgba(168, 85, 247, 0.12);
   color: #9333ea;
   border: 1px solid rgba(168, 85, 247, 0.25);
 }
-.dark .poetry-gutter-rhyme-E {
+.dark .poetry-gutter-rhyme-E, .dark .poetry-gutter-rhyme-Q, .dark .poetry-gutter-rhyme-c4 {
   background-color: rgba(168, 85, 247, 0.18);
   color: #c084fc;
   border-color: rgba(192, 132, 252, 0.3);
 }
 
-.poetry-gutter-rhyme-F {
+/* Group 5: Sky (F, R) */
+.poetry-gutter-rhyme-F, .poetry-gutter-rhyme-R, .poetry-gutter-rhyme-c5 {
   background-color: rgba(14, 165, 233, 0.12);
   color: #0284c7;
   border: 1px solid rgba(14, 165, 233, 0.25);
 }
-.dark .poetry-gutter-rhyme-F {
+.dark .poetry-gutter-rhyme-F, .dark .poetry-gutter-rhyme-R, .dark .poetry-gutter-rhyme-c5 {
   background-color: rgba(14, 165, 233, 0.18);
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.3);
 }
 
-.poetry-gutter-rhyme-G {
+/* Group 6: Teal (G, S) */
+.poetry-gutter-rhyme-G, .poetry-gutter-rhyme-S, .poetry-gutter-rhyme-c6 {
   background-color: rgba(20, 184, 166, 0.12);
   color: #0d9488;
   border: 1px solid rgba(20, 184, 166, 0.25);
 }
-.dark .poetry-gutter-rhyme-G {
+.dark .poetry-gutter-rhyme-G, .dark .poetry-gutter-rhyme-S, .dark .poetry-gutter-rhyme-c6 {
   background-color: rgba(20, 184, 166, 0.18);
   color: #2dd4bf;
   border-color: rgba(45, 212, 191, 0.3);
+}
+
+/* Group 7: Orange (H, T) */
+.poetry-gutter-rhyme-H, .poetry-gutter-rhyme-T, .poetry-gutter-rhyme-c7 {
+  background-color: rgba(249, 115, 22, 0.12);
+  color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+.dark .poetry-gutter-rhyme-H, .dark .poetry-gutter-rhyme-T, .dark .poetry-gutter-rhyme-c7 {
+  background-color: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+/* Group 8: Fuchsia (I, U) */
+.poetry-gutter-rhyme-I, .poetry-gutter-rhyme-U, .poetry-gutter-rhyme-c8 {
+  background-color: rgba(217, 70, 239, 0.12);
+  color: #c026d3;
+  border: 1px solid rgba(217, 70, 239, 0.25);
+}
+.dark .poetry-gutter-rhyme-I, .dark .poetry-gutter-rhyme-U, .dark .poetry-gutter-rhyme-c8 {
+  background-color: rgba(217, 70, 239, 0.18);
+  color: #e879f9;
+  border-color: rgba(232, 121, 249, 0.3);
+}
+
+/* Group 9: Cyan (J, V) */
+.poetry-gutter-rhyme-J, .poetry-gutter-rhyme-V, .poetry-gutter-rhyme-c9 {
+  background-color: rgba(6, 182, 212, 0.12);
+  color: #0891b2;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+.dark .poetry-gutter-rhyme-J, .dark .poetry-gutter-rhyme-V, .dark .poetry-gutter-rhyme-c9 {
+  background-color: rgba(6, 182, 212, 0.18);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* Group 10: Lime (K, W) */
+.poetry-gutter-rhyme-K, .poetry-gutter-rhyme-W, .poetry-gutter-rhyme-c10 {
+  background-color: rgba(132, 204, 22, 0.12);
+  color: #65a30d;
+  border: 1px solid rgba(132, 204, 22, 0.25);
+}
+.dark .poetry-gutter-rhyme-K, .dark .poetry-gutter-rhyme-W, .dark .poetry-gutter-rhyme-c10 {
+  background-color: rgba(132, 204, 22, 0.18);
+  color: #a3e635;
+  border-color: rgba(163, 230, 53, 0.3);
+}
+
+/* Group 11: Violet (L, X) */
+.poetry-gutter-rhyme-L, .poetry-gutter-rhyme-X, .poetry-gutter-rhyme-c11 {
+  background-color: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+.dark .poetry-gutter-rhyme-L, .dark .poetry-gutter-rhyme-X, .dark .poetry-gutter-rhyme-c11 {
+  background-color: rgba(139, 92, 246, 0.18);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.3);
 }
 
 /* Active rhyme group hover effect */

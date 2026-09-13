@@ -47,9 +47,6 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
   }
   const sortedLengths = Array.from(lengthDistribution.entries()).sort((a, b) => a[0] - b[0]);
 
-  // Consolidate non-empty rhymes
-  const condensedRhymes = nonEmpties.map(v => v.rhymeSymbol || '—').join(' ');
-
   return (
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-150"
@@ -176,8 +173,31 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
           <h3 className="text-xs uppercase tracking-wider font-semibold text-[var(--text-secondary)]">
             Esquema de rima (versos no vacíos)
           </h3>
-          <div className="p-3 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono text-sm tracking-widest text-indigo-600 dark:text-indigo-400 break-all">
-            {condensedRhymes || '—'}
+          <div className="p-3 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-wrap gap-1.5 font-mono text-sm tracking-wide">
+            {nonEmpties.length > 0 ? (
+              nonEmpties.map((v, idx) => {
+                const sym = v.rhymeSymbol || '—';
+                const isMatched = sym !== '—';
+                const base = sym.toUpperCase();
+                const code = base.charCodeAt(0);
+                const colorIdx = isMatched && code >= 65 && code <= 90 ? (code - 65) % 12 : 0;
+                return (
+                  <span
+                    key={idx}
+                    className={`inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded text-xs font-semibold ${
+                      isMatched
+                        ? `poetry-gutter-rhyme-${base} poetry-gutter-rhyme-c${colorIdx} border`
+                        : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]'
+                    }`}
+                    title={`V. ${v.lineIndex + 1}: ${v.text.slice(0, 32)}`}
+                  >
+                    {sym}
+                  </span>
+                );
+              })
+            ) : (
+              <span className="text-[var(--text-muted)] text-xs">Sin versos</span>
+            )}
           </div>
         </div>
       </div>

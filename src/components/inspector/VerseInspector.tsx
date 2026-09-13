@@ -211,9 +211,17 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[var(--text-muted)]">Esquema:</span>
-            <span className="font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              {verse.rhymeSymbol || '—'}
-            </span>
+            {verse.rhymeSymbol && verse.rhymeSymbol !== '—' ? (
+              <span
+                className={`font-mono font-bold px-2 py-0.5 rounded border poetry-gutter-rhyme-${verse.rhymeSymbol.toUpperCase()} poetry-gutter-rhyme-c${((verse.rhymeSymbol.toUpperCase().charCodeAt(0) - 65) % 12 + 12) % 12}`}
+              >
+                {verse.rhymeSymbol}
+              </span>
+            ) : (
+              <span className="font-mono font-bold px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]">
+                —
+              </span>
+            )}
           </div>
         </div>
       </section>

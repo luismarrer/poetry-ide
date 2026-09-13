@@ -51,4 +51,25 @@ describe('Consonant and Assonant Rhyme Analysis', () => {
     expect(result.rhymeScheme[1]).toBe('—');
     expect(result.rhymeScheme[2]).toBe('—');
   });
+
+  it('assigns letters beyond G (H, I, J...) for poems with many rhyme pairs', () => {
+    // 9 pairs of rhyming words: A, B, C, D, E, F, G, H, I
+    const poemText = [
+      'casa', 'pasa',       // A (-asa)
+      'beso', 'queso',     // B (-eso)
+      'pino', 'vino',       // C (-ino)
+      'sol', 'farol',       // D (-ol)
+      'luna', 'cuna',       // E (-una)
+      'mar', 'cantar',      // F (-ar)
+      'flor', 'amor',       // G (-or)
+      'viento', 'aliento',  // H (-iento)
+      'nieve', 'llueve',    // I (-ebe)
+    ].join('\n');
+
+    const result = analyzePoem(poemText, 'libre');
+    expect(result.rhymeScheme[14].toUpperCase()).toBe('H');
+    expect(result.rhymeScheme[15].toUpperCase()).toBe('H');
+    expect(result.rhymeScheme[16].toUpperCase()).toBe('I');
+    expect(result.rhymeScheme[17].toUpperCase()).toBe('I');
+  });
 });

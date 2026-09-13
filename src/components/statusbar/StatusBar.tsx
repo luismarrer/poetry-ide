@@ -38,9 +38,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             <span className="text-[var(--border-color)]">|</span>
             <span>
               Rima:{' '}
-              <strong className="text-indigo-600 dark:text-indigo-400">
-                {activeVerse.rhymeSymbol || '—'}
-              </strong>
+              {activeVerse.rhymeSymbol && activeVerse.rhymeSymbol !== '—' ? (
+                <strong
+                  className={`font-mono px-1 py-0.5 rounded text-xs poetry-gutter-rhyme-${activeVerse.rhymeSymbol.toUpperCase()} poetry-gutter-rhyme-c${((activeVerse.rhymeSymbol.toUpperCase().charCodeAt(0) - 65) % 12 + 12) % 12}`}
+                >
+                  {activeVerse.rhymeSymbol}
+                </strong>
+              ) : (
+                <strong className="text-[var(--text-muted)]">—</strong>
+              )}
               {activeVerse.rhymeEnding ? ` (-${activeVerse.rhymeEnding.raw})` : ''}
             </span>
             <span className="text-[var(--border-color)]">|</span>

@@ -103,7 +103,9 @@ class MetricGutterMarker extends GutterMarker {
 
         if (rhymeSymbol !== '—') {
           const baseLetter = rhymeSymbol.toUpperCase();
-          rhymeBadge.className += ` poetry-gutter-rhyme-matched poetry-gutter-rhyme-${baseLetter}`;
+          const charCode = baseLetter.charCodeAt(0);
+          const colorIndex = charCode >= 65 && charCode <= 90 ? (charCode - 65) % 12 : 0;
+          rhymeBadge.className += ` poetry-gutter-rhyme-matched poetry-gutter-rhyme-${baseLetter} poetry-gutter-rhyme-c${colorIndex}`;
           rhymeBadge.textContent = rhymeSymbol;
           rhymeBadge.dataset.rhymeGroup = baseLetter;
 
