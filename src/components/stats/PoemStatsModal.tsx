@@ -18,7 +18,7 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const { verses, summary, rhymeScheme } = analysis;
+  const { verses, summary } = analysis;
   const nonEmpties = verses.filter(v => !v.isEmpty);
 
   // Compute stanzas

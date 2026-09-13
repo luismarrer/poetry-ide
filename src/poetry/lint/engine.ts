@@ -1,5 +1,5 @@
 import type { PoetryRule, PoetryContext } from './types';
-import type { Diagnostic, VerseAnalysis } from '../meter/analyzeVerse';
+import type { Diagnostic } from '../meter/analyzeVerse';
 import { silvaForm } from '../forms/silva';
 
 export const silvaRule: PoetryRule = {

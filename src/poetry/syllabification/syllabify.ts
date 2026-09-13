@@ -83,7 +83,6 @@ function findNuclei(word: string): VowelNucleus[] {
 
       const v1 = word[nucleusEnd - 1]?.toLowerCase();
       const v2 = word[nextVowelIndex]?.toLowerCase();
-      const hasInterveningH = nextVowelIndex > nucleusEnd;
 
       // Determine if v1 and v2 can form a diphthong:
       let canMerge = false;
