@@ -1,0 +1,41 @@
+{
+  "name": "poetry-ide",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "start": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "astro": "ASTRO_TELEMETRY_DISABLED=1 astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/react": "^4.2.1",
+    "@astrojs/tailwind": "^5.1.5",
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/language": "^6.10.8",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.4",
+    "astro": "^5.4.1",
+    "codemirror": "^6.0.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.6"
+  }
+}
