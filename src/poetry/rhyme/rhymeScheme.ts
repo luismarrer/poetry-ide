@@ -27,7 +27,7 @@ export function computeRhymeScheme(
     const ending = verses[i].rhymeEnding;
     if (!ending) continue;
 
-    const key = mode === 'consonant' ? ending.normalized : ending.vowelsOnly;
+    const key = mode === 'consonant' ? ending.normalized : (ending.assonantEnding || ending.vowelsOnly);
     rhymeCounts.set(key, (rhymeCounts.get(key) || 0) + 1);
 
     if (!rhymeFirstIndex.has(key)) {
@@ -43,7 +43,7 @@ export function computeRhymeScheme(
     const ending = verses[i].rhymeEnding;
     if (!ending) continue;
 
-    const key = mode === 'consonant' ? ending.normalized : ending.vowelsOnly;
+    const key = mode === 'consonant' ? ending.normalized : (ending.assonantEnding || ending.vowelsOnly);
     const count = rhymeCounts.get(key) || 0;
 
     if (count > 1) {

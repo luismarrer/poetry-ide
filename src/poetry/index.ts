@@ -25,6 +25,7 @@ export interface PoemAnalysisResult {
   form: PoeticForm
   summary: FormSummary
   rhymeScheme: string[]
+  rhymeMode?: 'consonant' | 'assonant'
   lineDiagnostics: Map<number, Diagnostic[]>
 }
 
@@ -34,7 +35,8 @@ export interface PoemAnalysisResult {
 export function analyzePoem(
   text: string,
   formId: FormId = 'libre',
-  overrides: PoemOverrides = {}
+  overrides: PoemOverrides = {},
+  rhymeMode: 'consonant' | 'assonant' = 'consonant'
 ): PoemAnalysisResult {
   const lines = text.split('\n');
   const verses: VerseAnalysis[] = lines.map((line, idx) =>
@@ -47,7 +49,7 @@ export function analyzePoem(
     metricSyllables: v.metricSyllables,
     rhymeEnding: v.rhymeEnding,
   }));
-  const rhymeScheme = computeRhymeScheme(rhymeInfo, 'consonant');
+  const rhymeScheme = computeRhymeScheme(rhymeInfo, rhymeMode);
 
   // Attach rhyme symbols to verses
   for (let i = 0; i < verses.length; i++) {

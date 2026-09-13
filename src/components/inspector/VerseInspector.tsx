@@ -1,11 +1,15 @@
 import React from 'react';
 import type { VerseAnalysis } from '@/poetry/meter/analyzeVerse';
 import { formatRhythmicAccents } from '@/poetry/rhythm/accents';
-import { Sparkles, Sliders, RotateCcw, Info } from 'lucide-react';
+import { Sparkles, Sliders, RotateCcw, Info, Music } from 'lucide-react';
+import { RhymeSuggester } from './RhymeSuggester';
 
 interface VerseInspectorProps {
   verse?: VerseAnalysis
   hasOverrides: boolean
+  rhymeMode?: 'consonant' | 'assonant'
+  onRhymeModeChange?: (mode: 'consonant' | 'assonant') => void
+  onInsertWord?: (word: string) => void
   onToggleSynalepha: (lineIndex: number, synalephaId: string, currentActive: boolean) => void
   onSetManualCount: (lineIndex: number, count?: number) => void
   onResetVerseOverrides: (lineIndex: number) => void
@@ -34,6 +38,9 @@ function getVerseTypeName(syllables: number): string {
 export const VerseInspector: React.FC<VerseInspectorProps> = ({
   verse,
   hasOverrides,
+  rhymeMode = 'consonant',
+  onRhymeModeChange,
+  onInsertWord,
   onToggleSynalepha,
   onSetManualCount,
   onResetVerseOverrides,
@@ -285,31 +292,59 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
 
       {/* Rhyme */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-xs uppercase tracking-wider font-semibold text-[var(--text-secondary)]">
-          Rima
-        </h3>
-        <div className="p-2.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[var(--text-muted)]">Terminación:</span>
-            <span className="font-mono font-semibold text-[var(--text-primary)]">
-              {verse.rhymeEnding ? `-${verse.rhymeEnding.raw}` : '—'}
-            </span>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs uppercase tracking-wider font-semibold text-[var(--text-secondary)] flex items-center gap-1.5">
+            <Music className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Rima del Verso</span>
+          </h3>
+          <span className="text-[10px] font-mono text-[var(--text-muted)] bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded border border-[var(--border-color)]">
+            Modo: {rhymeMode === 'consonant' ? 'Consonante' : 'Asonante'}
+          </span>
+        </div>
+
+        <div className="p-2.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[var(--text-muted)]">Consonante:</span>
+              <span className="font-mono font-semibold text-[var(--text-primary)]">
+                {verse.rhymeEnding ? `-${verse.rhymeEnding.raw}` : '—'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[var(--text-muted)]">Asonante:</span>
+              <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                {verse.rhymeEnding ? `${verse.rhymeEnding.assonantEnding || verse.rhymeEnding.vowelsOnly}` : '—'}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[var(--text-muted)]">Esquema:</span>
+
+          <div className="flex items-center justify-between pt-1.5 border-t border-[var(--border-color)]/60">
+            <span className="text-[var(--text-muted)]">Esquema ({rhymeMode}):</span>
             {verse.rhymeSymbol && verse.rhymeSymbol !== '—' ? (
               <span
                 className={`font-mono font-bold px-2 py-0.5 rounded border poetry-gutter-rhyme-${verse.rhymeSymbol.toUpperCase()} poetry-gutter-rhyme-c${((verse.rhymeSymbol.toUpperCase().charCodeAt(0) - 65) % 12 + 12) % 12}`}
+                data-testid="verse-rhyme-symbol"
               >
                 {verse.rhymeSymbol}
               </span>
             ) : (
-              <span className="font-mono font-bold px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]">
-                —
+              <span
+                className="font-mono font-bold px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]"
+                data-testid="verse-rhyme-symbol"
+              >
+                — (suelto)
               </span>
             )}
           </div>
         </div>
+
+        {/* Rhyme Suggester & Finder */}
+        <RhymeSuggester
+          verse={verse}
+          rhymeMode={rhymeMode}
+          onRhymeModeChange={onRhymeModeChange}
+          onInsertWord={onInsertWord}
+        />
       </section>
 
       {/* Manual Count Adjustment */}

@@ -10,6 +10,8 @@ interface TopBarProps {
   onToggleShowSynalephas: () => void
   showRhyme: boolean
   onToggleShowRhyme: () => void
+  rhymeMode?: 'consonant' | 'assonant'
+  onRhymeModeChange?: (mode: 'consonant' | 'assonant') => void
   theme: 'light' | 'dark'
   onToggleTheme: () => void
   onOpenStats: () => void
@@ -24,6 +26,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleShowSynalephas,
   showRhyme,
   onToggleShowRhyme,
+  rhymeMode = 'consonant',
+  onRhymeModeChange,
   theme,
   onToggleTheme,
   onOpenStats,
@@ -95,21 +99,52 @@ export const TopBar: React.FC<TopBarProps> = ({
           <span className="font-mono text-sm leading-none -mt-0.5">‿</span>
         </button>
 
-        {/* Rhyme toggle */}
-        <button
-          onClick={onToggleShowRhyme}
-          className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium border transition-colors flex-shrink-0 ${
-            showRhyme
-              ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50'
-              : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:text-[var(--text-primary)]'
-          }`}
-          title="Mostrar u ocultar la rima en el margen del editor"
-          data-testid="toggle-rhyme-vis"
-        >
-          <Music className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Rima</span>
-          <span className="font-mono text-xs font-bold -mt-0.5">Aa</span>
-        </button>
+        {/* Rhyme toggle & mode selector */}
+        <div className="flex items-center rounded-md border border-[var(--border-color)] bg-[var(--bg-secondary)] p-0.5 text-xs font-medium flex-shrink-0">
+          <button
+            onClick={onToggleShowRhyme}
+            className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded transition-colors ${
+              showRhyme
+                ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+            title="Mostrar u ocultar la rima en el margen del editor"
+            data-testid="toggle-rhyme-vis"
+          >
+            <Music className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Rima</span>
+            <span className="font-mono text-xs font-bold">Aa</span>
+          </button>
+
+          {showRhyme && onRhymeModeChange && (
+            <div className="flex items-center pl-1 ml-0.5 border-l border-[var(--border-color)]/70 gap-0.5">
+              <button
+                onClick={() => onRhymeModeChange('consonant')}
+                className={`px-1.5 sm:px-2 py-0.5 rounded text-[11px] transition-colors ${
+                  rhymeMode === 'consonant'
+                    ? 'bg-[var(--bg-surface)] text-purple-700 dark:text-purple-300 font-bold shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
+                title="Mostrar solo rimas consonantes"
+                data-testid="rhyme-mode-consonant"
+              >
+                Consonante
+              </button>
+              <button
+                onClick={() => onRhymeModeChange('assonant')}
+                className={`px-1.5 sm:px-2 py-0.5 rounded text-[11px] transition-colors ${
+                  rhymeMode === 'assonant'
+                    ? 'bg-[var(--bg-surface)] text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                }`}
+                title="Mostrar rimas asonantes según la tradición métrica"
+                data-testid="rhyme-mode-assonant"
+              >
+                Asonante
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Sample Poems */}
         <div className="relative flex-shrink-0">

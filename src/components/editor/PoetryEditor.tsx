@@ -18,6 +18,7 @@ interface PoetryEditorProps {
   formId: FormId
   showSynalephas: boolean
   showRhyme: boolean
+  rhymeMode?: 'consonant' | 'assonant'
   onActiveVerseChange: (lineIndex: number) => void
 }
 
@@ -30,6 +31,7 @@ export const PoetryEditor: React.FC<PoetryEditorProps> = ({
   formId,
   showSynalephas,
   showRhyme,
+  rhymeMode = 'consonant',
   onActiveVerseChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,11 +97,11 @@ export const PoetryEditor: React.FC<PoetryEditorProps> = ({
 
     view.dispatch({
       effects: [
-        setGutterDataEffect.of({ verses, formId, showRhyme }),
+        setGutterDataEffect.of({ verses, formId, showRhyme, rhymeMode }),
         setSynalephaConfigEffect.of({ show: showSynalephas, verses }),
       ],
     });
-  }, [verses, formId, showSynalephas, showRhyme]);
+  }, [verses, formId, showSynalephas, showRhyme, rhymeMode]);
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden bg-[var(--bg-primary)]">

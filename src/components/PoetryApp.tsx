@@ -19,6 +19,7 @@ export const PoetryApp: React.FC = () => {
   const [overrides, setOverrides] = useState<PoemOverrides>({});
   const [showSynalephas, setShowSynalephas] = useState<boolean>(true);
   const [showRhyme, setShowRhyme] = useState<boolean>(true);
+  const [rhymeMode, setRhymeMode] = useState<'consonant' | 'assonant'>('consonant');
   const [activeLineIndex, setActiveLineIndex] = useState<number>(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
@@ -36,6 +37,7 @@ export const PoetryApp: React.FC = () => {
         if (parsed.overrides) setOverrides(parsed.overrides);
         if (typeof parsed.showSynalephas === 'boolean') setShowSynalephas(parsed.showSynalephas);
         if (typeof parsed.showRhyme === 'boolean') setShowRhyme(parsed.showRhyme);
+        if (parsed.rhymeMode === 'consonant' || parsed.rhymeMode === 'assonant') setRhymeMode(parsed.rhymeMode);
         if (parsed.theme === 'light' || parsed.theme === 'dark') setTheme(parsed.theme);
       } else {
         // Default to dark theme if system prefers dark
@@ -60,13 +62,14 @@ export const PoetryApp: React.FC = () => {
         overrides,
         showSynalephas,
         showRhyme,
+        rhymeMode,
         theme,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // ignore storage errors
     }
-  }, [title, text, formId, overrides, showSynalephas, showRhyme, theme, isLoaded]);
+  }, [title, text, formId, overrides, showSynalephas, showRhyme, rhymeMode, theme, isLoaded]);
 
   // 4. Sync theme class on HTML document
   useEffect(() => {
@@ -80,8 +83,8 @@ export const PoetryApp: React.FC = () => {
 
   // 5. Deterministic real-time analysis
   const analysis: PoemAnalysisResult = useMemo(() => {
-    return analyzePoem(text, formId, overrides);
-  }, [text, formId, overrides]);
+    return analyzePoem(text, formId, overrides, rhymeMode);
+  }, [text, formId, overrides, rhymeMode]);
 
   const activeVerse = analysis.verses[activeLineIndex] || analysis.verses[0];
   const hasOverridesOnActiveVerse = Boolean(
@@ -149,6 +152,18 @@ export const PoetryApp: React.FC = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   }, []);
 
+  const handleInsertWord = useCallback((word: string) => {
+    setText(prev => {
+      const lines = prev.split('\n');
+      if (activeLineIndex >= 0 && activeLineIndex < lines.length) {
+        const line = lines[activeLineIndex];
+        lines[activeLineIndex] = line.trim().length > 0 ? `${line.trimEnd()} ${word}` : word;
+        return lines.join('\n');
+      }
+      return prev;
+    });
+  }, [activeLineIndex]);
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] select-text">
       {/* Top Bar */}
@@ -160,6 +175,8 @@ export const PoetryApp: React.FC = () => {
         onToggleShowSynalephas={() => setShowSynalephas(s => !s)}
         showRhyme={showRhyme}
         onToggleShowRhyme={() => setShowRhyme(r => !r)}
+        rhymeMode={rhymeMode}
+        onRhymeModeChange={setRhymeMode}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenStats={() => setIsStatsOpen(true)}
@@ -179,6 +196,7 @@ export const PoetryApp: React.FC = () => {
             formId={formId}
             showSynalephas={showSynalephas}
             showRhyme={showRhyme}
+            rhymeMode={rhymeMode}
             onActiveVerseChange={setActiveLineIndex}
           />
         </main>
@@ -188,6 +206,9 @@ export const PoetryApp: React.FC = () => {
           <VerseInspector
             verse={activeVerse}
             hasOverrides={hasOverridesOnActiveVerse}
+            rhymeMode={rhymeMode}
+            onRhymeModeChange={setRhymeMode}
+            onInsertWord={handleInsertWord}
             onToggleSynalepha={handleToggleSynalepha}
             onSetManualCount={handleSetManualCount}
             onResetVerseOverrides={handleResetVerseOverrides}
@@ -208,6 +229,7 @@ export const PoetryApp: React.FC = () => {
         isOpen={isStatsOpen}
         onClose={() => setIsStatsOpen(false)}
         formId={formId}
+        rhymeMode={rhymeMode}
         analysis={analysis}
       />
     </div>

@@ -2,9 +2,10 @@ import { stripAccent, isVowel, isVocalicY } from '../phonology/vowels';
 import type { WordAnalysis } from '../syllabification/types';
 
 export interface RhymeEnding {
-  raw: string             // e.g. "osa", "ía", "erpo", "erto"
+  raw: string             // e.g. "usa", "ía", "erpo", "erto"
   normalized: string      // Phonetically normalized for consonant rhyme
-  vowelsOnly: string      // For assonant rhyme (e.g. "e-a", "e-o")
+  vowelsOnly: string      // Canonical traditional assonant rhyme (e.g. "e-a", "e-o", "u-a")
+  assonantEnding: string  // Canonical traditional assonant rhyme key (e.g. "u-a", "a-o", "a")
   tonicVowel: string      // e.g. "o", "í", "e"
 }
 
@@ -36,13 +37,36 @@ export function normalizeRhymePhonemes(str: string): string {
   // ll -> y (yeísmo)
   s = s.replace(/ll/g, 'y');
 
-  // Normalize accented vowels for phonetic comparison if needed,
-  // but keep track of the tonic position.
   return s;
 }
 
 /**
- * Extracts all vowels from a string, separated by hyphens (for assonant rhyme).
+ * Returns the nuclear vowel of an unstressed syllable for assonant rhyming.
+ * In Spanish postonic diphthongs (e.g. -ia, -io, -ie, -ua, -ue, -uo),
+ * the weak vowel (i, u) is semivocalic/semiconsonantal and does not form assonance;
+ * the strong/open vowel (a, e, o) is the rhyming nucleus.
+ */
+export function getUnstressedSyllableNuclearVowel(syllableText: string): string {
+  const vowels: string[] = [];
+  for (let i = 0; i < syllableText.length; i++) {
+    const ch = syllableText[i];
+    if (isVowel(ch) || isVocalicY(syllableText, i)) {
+      vowels.push(stripAccent(ch));
+    }
+  }
+  if (vowels.length === 0) return '';
+  if (vowels.length === 1) return vowels[0];
+
+  // Look for strong/open vowel first
+  const openVowel = vowels.find(v => ['a', 'e', 'o'].includes(v));
+  if (openVowel) return openVowel;
+
+  // If two weak vowels, second is the nucleus
+  return vowels[vowels.length - 1];
+}
+
+/**
+ * Extracts all vowels from a string, separated by hyphens (fallback).
  */
 export function extractVowelsOnly(str: string): string {
   const vowels: string[] = [];
@@ -111,13 +135,37 @@ export function extractRhymeFromWord(word: WordAnalysis): RhymeEnding | undefine
   const rawEnding = endingFromStressedSyllable + remainingSyllables;
 
   const tonicVowel = stressedSyllable[tonicCharIndex];
+  const tonicVowelClean = stripAccent(tonicVowel);
   const normalized = normalizeRhymePhonemes(rawEnding);
-  const vowelsOnly = extractVowelsOnly(rawEnding);
+
+  // Compute canonical traditional assonant rhyme according to Spanish poetics (Navarro Tomás, Quilis)
+  let assonantEnding = tonicVowelClean;
+
+  if (word.stressType === 'aguda') {
+    // Aguda: only the tonic vowel counts (e.g. mar -> "a", reloj -> "o")
+    assonantEnding = tonicVowelClean;
+  } else if (word.stressType === 'llana') {
+    // Llana: tonic vowel + nuclear vowel of the final unstressed syllable (e.g. musa -> "u-a", gracia -> "a-a")
+    const lastSyllable = word.syllables[word.syllables.length - 1]?.text || '';
+    const finalVowel = getUnstressedSyllableNuclearVowel(lastSyllable);
+    assonantEnding = finalVowel ? `${tonicVowelClean}-${finalVowel}` : tonicVowelClean;
+  } else {
+    // Esdrújula or Sobresdrújula:
+    // Traditional Spanish rule: tonic vowel + final syllable vowel,
+    // ignoring intermediate postonic syllable(s)
+    // (e.g. cántaro -> "a-o", música -> "u-a", tímido -> "i-o")
+    const lastSyllable = word.syllables[word.syllables.length - 1]?.text || '';
+    const finalVowel = getUnstressedSyllableNuclearVowel(lastSyllable);
+    assonantEnding = finalVowel ? `${tonicVowelClean}-${finalVowel}` : tonicVowelClean;
+  }
+
+  const vowelsOnly = assonantEnding;
 
   return {
     raw: rawEnding,
     normalized,
     vowelsOnly,
+    assonantEnding,
     tonicVowel,
   };
 }

@@ -184,4 +184,72 @@ test.describe('Poetry IDE E2E Suite', () => {
     await page.locator('.cm-line', { hasText: 'Estrofa I' }).click();
     await expect(inspector).toContainText('Título / Encabezado');
   });
+
+  test('switches between consonant and assonant rhyme modes and provides rhyme suggestions', async ({ page }) => {
+    // Select blank canvas
+    await page.selectOption('[data-testid="sample-poems-select"]', 'blank');
+
+    // Type 3 verses: musa (11), confusa (7), luna (11)
+    const editor = page.locator('.cm-content');
+    await editor.click();
+    await page.keyboard.insertText('cuantos me dictó versos dulce musa\n');
+    await page.keyboard.insertText('en soledad confusa\n');
+    await page.keyboard.insertText('bajo la clara lumbre de la luna');
+
+    const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
+
+    // 1. In Consonant mode (default)
+    // Line 1 (musa) and Line 2 (confusa) rhyme in -usa -> 'A' and 'a'
+    // Line 3 (luna) does NOT rhyme consonant with -usa -> '—'
+    await expect(gutterItems.nth(0).locator('.poetry-gutter-rhyme')).toContainText('A');
+    await expect(gutterItems.nth(1).locator('.poetry-gutter-rhyme')).toContainText('a');
+    await expect(gutterItems.nth(2).locator('.poetry-gutter-rhyme')).toContainText('—');
+
+    // 2. Switch to Assonant mode using the TopBar button
+    const asonBtn = page.locator('[data-testid="rhyme-mode-assonant"]');
+    await expect(asonBtn).toBeVisible();
+    await asonBtn.click();
+
+    // In Assonant mode: luna has u-a assonance, matching musa and confusa!
+    // Line 3 (11 syllables) becomes 'A'
+    await expect(gutterItems.nth(2).locator('.poetry-gutter-rhyme')).toContainText('A');
+
+    // Verify localStorage has persisted rhymeMode = 'assonant'
+    const storedState = await page.evaluate(() => {
+      const raw = localStorage.getItem('poetry_ide_state_v1');
+      return raw ? JSON.parse(raw) : null;
+    });
+    expect(storedState?.rhymeMode).toBe('assonant');
+
+    // 3. Inspect Line 1 (musa) and verify Rhyme Suggester
+    await page.locator('.cm-line', { hasText: 'dulce musa' }).click();
+    const inspector = page.locator('[data-testid="verse-inspector"]');
+    await expect(inspector).toBeVisible();
+    await expect(inspector).toContainText('Rima del Verso');
+    await expect(inspector).toContainText('-usa');
+    await expect(inspector).toContainText('u-a');
+
+    // Rhyme Suggester should list words with u-a assonance like luna / espuma / pluma
+    const suggestionsList = page.locator('[data-testid="rhyme-suggestions-list"]');
+    await expect(suggestionsList).toBeVisible();
+    await expect(suggestionsList).toContainText('luna');
+
+    // 4. Test Syllable filter (e.g., 2 syllables)
+    const filter2Btn = page.locator('[data-testid="filter-syllables-2"]');
+    await filter2Btn.click();
+    await expect(suggestionsList).toContainText('luna');
+
+    // 5. Test Free Search Input in suggester
+    const searchInput = page.locator('[data-testid="rhyme-suggester-search-input"]');
+    await searchInput.fill('noche');
+    await page.waitForTimeout(200);
+    // In assonant mode, 'noche' (o-e) should suggest 'bosque', 'torre', etc.
+    await expect(suggestionsList).toContainText('torre');
+
+    // 6. Switch back to Consonant mode
+    const consBtn = page.locator('[data-testid="rhyme-mode-consonant"]');
+    await consBtn.click();
+    // Line 3 returns to '—'
+    await expect(gutterItems.nth(2).locator('.poetry-gutter-rhyme')).toContainText('—');
+  });
 });

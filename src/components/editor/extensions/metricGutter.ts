@@ -7,13 +7,14 @@ export interface GutterData {
   verses: VerseAnalysis[]
   formId: FormId
   showRhyme: boolean
+  rhymeMode?: 'consonant' | 'assonant'
 }
 
 export const setGutterDataEffect = StateEffect.define<GutterData>();
 
 export const gutterDataField = StateField.define<GutterData>({
   create() {
-    return { verses: [], formId: 'silva', showRhyme: true };
+    return { verses: [], formId: 'silva', showRhyme: true, rhymeMode: 'consonant' };
   },
   update(value, tr) {
     for (const effect of tr.effects) {
@@ -30,6 +31,7 @@ class MetricGutterMarker extends GutterMarker {
   verse?: VerseAnalysis;
   formId: FormId;
   showRhyme: boolean;
+  rhymeMode: 'consonant' | 'assonant';
   isSpacer: boolean;
 
   constructor(
@@ -37,6 +39,7 @@ class MetricGutterMarker extends GutterMarker {
     verse: VerseAnalysis | undefined,
     formId: FormId,
     showRhyme: boolean,
+    rhymeMode: 'consonant' | 'assonant' = 'consonant',
     isSpacer = false
   ) {
     super();
@@ -44,6 +47,7 @@ class MetricGutterMarker extends GutterMarker {
     this.verse = verse;
     this.formId = formId;
     this.showRhyme = showRhyme;
+    this.rhymeMode = rhymeMode;
     this.isSpacer = isSpacer;
   }
 
@@ -109,67 +113,79 @@ class MetricGutterMarker extends GutterMarker {
 
       if (!this.isSpacer && this.verse && !this.verse.isEmpty) {
         const rhymeSymbol = this.verse.rhymeSymbol || '—';
-        const ending = this.verse.rhymeEnding;
+          const ending = this.verse.rhymeEnding;
+          const isAssonant = this.rhymeMode === 'assonant';
 
-        if (rhymeSymbol !== '—') {
-          const baseLetter = rhymeSymbol.toUpperCase();
-          const charCode = baseLetter.charCodeAt(0);
-          const colorIndex = charCode >= 65 && charCode <= 90 ? (charCode - 65) % 12 : 0;
-          rhymeBadge.className += ` poetry-gutter-rhyme-matched poetry-gutter-rhyme-${baseLetter} poetry-gutter-rhyme-c${colorIndex}`;
-          rhymeBadge.textContent = rhymeSymbol;
-          rhymeBadge.dataset.rhymeGroup = baseLetter;
+          if (rhymeSymbol !== '—') {
+            const baseLetter = rhymeSymbol.toUpperCase();
+            const charCode = baseLetter.charCodeAt(0);
+            const colorIndex = charCode >= 65 && charCode <= 90 ? (charCode - 65) % 12 : 0;
+            rhymeBadge.className += ` poetry-gutter-rhyme-matched poetry-gutter-rhyme-${baseLetter} poetry-gutter-rhyme-c${colorIndex}`;
+            rhymeBadge.textContent = rhymeSymbol;
+            rhymeBadge.dataset.rhymeGroup = baseLetter;
 
-          const endingText = ending ? ` (-${ending.raw})` : '';
-          rhymeBadge.title = `Rima ${rhymeSymbol}${endingText}`;
+            const endingText = ending
+              ? (isAssonant ? ` (asonante: ${ending.assonantEnding || ending.vowelsOnly})` : ` (consonante: -${ending.raw})`)
+              : '';
+            rhymeBadge.title = `Rima ${rhymeSymbol}${endingText}`;
 
-          rhymeBadge.addEventListener('mouseenter', () => {
-            document.querySelectorAll(`.poetry-gutter-rhyme[data-rhyme-group="${baseLetter}"]`).forEach(el => {
-              el.classList.add('poetry-rhyme-active');
+            rhymeBadge.addEventListener('mouseenter', () => {
+              document.querySelectorAll(`.poetry-gutter-rhyme[data-rhyme-group="${baseLetter}"]`).forEach(el => {
+                el.classList.add('poetry-rhyme-active');
+              });
             });
-          });
-          rhymeBadge.addEventListener('mouseleave', () => {
-            document.querySelectorAll(`.poetry-gutter-rhyme[data-rhyme-group="${baseLetter}"]`).forEach(el => {
-              el.classList.remove('poetry-rhyme-active');
+            rhymeBadge.addEventListener('mouseleave', () => {
+              document.querySelectorAll(`.poetry-gutter-rhyme[data-rhyme-group="${baseLetter}"]`).forEach(el => {
+                el.classList.remove('poetry-rhyme-active');
+              });
             });
-          });
+          } else {
+            rhymeBadge.className += ' poetry-gutter-rhyme-suelto';
+            rhymeBadge.textContent = '—';
+            const endingText = ending
+              ? (isAssonant ? ` (asonante: ${ending.assonantEnding || ending.vowelsOnly})` : ` (consonante: -${ending.raw})`)
+              : '';
+            rhymeBadge.title = `Verso suelto / libre${endingText}`;
+          }
+        } else if (this.isSpacer) {
+          rhymeBadge.textContent = 'A';
         } else {
-          rhymeBadge.className += ' poetry-gutter-rhyme-suelto';
-          rhymeBadge.textContent = '—';
-          const endingText = ending ? ` (-${ending.raw})` : '';
-          rhymeBadge.title = `Verso suelto / libre${endingText}`;
+          rhymeBadge.textContent = '';
         }
-      } else if (this.isSpacer) {
-        rhymeBadge.textContent = 'A';
-      } else {
-        rhymeBadge.textContent = '';
+
+        container.appendChild(rhymeBadge);
       }
 
-      container.appendChild(rhymeBadge);
+      return container;
     }
-
-    return container;
   }
-}
 
-export function createMetricGutter() {
-  return [
-    gutterDataField,
-    gutter({
-      class: 'cm-poetry-gutter',
-      lineMarker(view, line) {
-        const data = view.state.field(gutterDataField);
-        const lineIndex = view.state.doc.lineAt(line.from).number - 1;
-        const verse = data.verses[lineIndex];
-        return new MetricGutterMarker(lineIndex + 1, verse, data.formId, data.showRhyme, false);
-      },
-      lineMarkerChange(update) {
-        return update.transactions.some(tr =>
-          tr.effects.some(e => e.is(setGutterDataEffect))
-        );
-      },
-      initialSpacer() {
-        return new MetricGutterMarker(99, undefined, 'silva', true, true);
-      },
-    }),
-  ];
-}
+  export function createMetricGutter() {
+    return [
+      gutterDataField,
+      gutter({
+        class: 'cm-poetry-gutter',
+        lineMarker(view, line) {
+          const data = view.state.field(gutterDataField);
+          const lineIndex = view.state.doc.lineAt(line.from).number - 1;
+          const verse = data.verses[lineIndex];
+          return new MetricGutterMarker(
+            lineIndex + 1,
+            verse,
+            data.formId,
+            data.showRhyme,
+            data.rhymeMode || 'consonant',
+            false
+          );
+        },
+        lineMarkerChange(update) {
+          return update.transactions.some(tr =>
+            tr.effects.some(e => e.is(setGutterDataEffect))
+          );
+        },
+        initialSpacer() {
+          return new MetricGutterMarker(99, undefined, 'silva', true, 'consonant', true);
+        },
+      }),
+    ];
+  }

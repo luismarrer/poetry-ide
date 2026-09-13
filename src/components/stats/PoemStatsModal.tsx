@@ -8,6 +8,7 @@ interface PoemStatsModalProps {
   isOpen: boolean
   onClose: () => void
   formId: FormId
+  rhymeMode?: 'consonant' | 'assonant'
   analysis: PoemAnalysisResult
 }
 
@@ -16,6 +17,7 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
   isOpen,
   onClose,
   formId,
+  rhymeMode = 'consonant',
   analysis,
 }) => {
   if (!isOpen) return null;
@@ -180,7 +182,7 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
         {/* Rhyme Scheme */}
         <div className="flex flex-col gap-2 pt-2 border-t border-[var(--border-color)]">
           <h3 className="text-xs uppercase tracking-wider font-semibold text-[var(--text-secondary)]">
-            Esquema de rima (versos no vacíos)
+            Esquema de rima {rhymeMode === 'assonant' ? '(Asonante)' : '(Consonante)'}
           </h3>
           <div className="p-3 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-wrap gap-1.5 font-mono text-sm tracking-wide">
             {nonEmpties.length > 0 ? (
