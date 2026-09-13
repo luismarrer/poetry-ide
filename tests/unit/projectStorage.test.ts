@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   exportPoemAsPlainText,
   exportPoemAsManuscript,
@@ -6,8 +6,6 @@ import {
   parseProjectBackup,
   validateProjectBackup,
   saveProjectState,
-  STORAGE_KEY,
-  SESSION_BACKUP_KEY,
   type StorableProjectState,
 } from '@/poetry/storage/projectStorage';
 import { analyzePoem } from '@/poetry/index';

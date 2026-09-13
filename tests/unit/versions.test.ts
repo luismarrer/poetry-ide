@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createNewVersion, type PoemVersion } from '../../src/poetry/versions/types';
+import { createNewVersion } from '../../src/poetry/versions/types';
 import { analyzePoem } from '../../src/poetry/index';
 
 describe('Poem Versions Unit Tests', () => {

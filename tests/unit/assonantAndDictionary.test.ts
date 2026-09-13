@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeVerse, analyzePoem } from '@/poetry/index';
+import { analyzePoem } from '@/poetry/index';
 import { extractRhymeFromWord } from '@/poetry/rhyme/extractRhyme';
 import { analyzeWord } from '@/poetry/meter/finalStress';
 import { poeticDictionary } from '@/poetry/rhyme/poeticDictionary';
