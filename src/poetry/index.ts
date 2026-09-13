@@ -3,6 +3,8 @@ import type { PoemOverrides } from './meter/overrides';
 import { computeRhymeScheme } from './rhyme/rhymeScheme';
 import { getPoeticForm, type FormId, type FormSummary, type PoeticForm } from './forms';
 import { lintPoem, STANDARD_RULES } from './lint/engine';
+import { analyzeStanzas } from './stanzas/analyzeStanzas';
+import type { StanzaAnalysis } from './stanzas/types';
 
 export * from './phonology/vowels';
 export * from './phonology/consonants';
@@ -19,6 +21,8 @@ export * from './rhyme/rhymeScheme';
 export * from './forms';
 export * from './lint/types';
 export * from './lint/engine';
+export * from './stanzas/types';
+export * from './stanzas/analyzeStanzas';
 
 export interface PoemAnalysisResult {
   verses: VerseAnalysis[]
@@ -26,6 +30,7 @@ export interface PoemAnalysisResult {
   summary: FormSummary
   rhymeScheme: string[]
   rhymeMode?: 'consonant' | 'assonant'
+  stanzas: StanzaAnalysis[]
   lineDiagnostics: Map<number, Diagnostic[]>
 }
 
@@ -56,6 +61,9 @@ export function analyzePoem(
     verses[i].rhymeSymbol = rhymeScheme[i];
   }
 
+  // Compute stanzas and attach stanzaInfo to each verse
+  const stanzas = analyzeStanzas(verses);
+
   // Get active poetic form and compute summary
   const form = getPoeticForm(formId);
   const summary = form.computeSummary(verses);
@@ -76,6 +84,8 @@ export function analyzePoem(
     form,
     summary,
     rhymeScheme,
+    rhymeMode,
+    stanzas,
     lineDiagnostics,
   };
 }

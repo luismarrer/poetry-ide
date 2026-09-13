@@ -22,20 +22,9 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const { verses, summary } = analysis;
+  const { verses, summary, stanzas = [] } = analysis;
   const nonEmpties = verses.filter(v => !v.isEmpty);
-
-  // Compute stanzas
-  let stanzas = 0;
-  let inStanza = false;
-  for (const v of verses) {
-    if (!v.isEmpty && !inStanza) {
-      stanzas++;
-      inStanza = true;
-    } else if (v.isEmpty) {
-      inStanza = false;
-    }
-  }
+  const stanzasCount = stanzas.length;
 
   // Total words
   let totalWords = 0;
@@ -58,7 +47,7 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
       data-testid="stats-modal-backdrop"
     >
       <div
-        className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl max-w-lg w-full p-6 flex flex-col gap-6 text-[var(--text-primary)]"
+        className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl max-w-lg w-full p-6 flex flex-col gap-6 text-[var(--text-primary)] max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
         data-testid="stats-modal"
       >
@@ -95,8 +84,8 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
           </div>
 
           <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-center">
-            <span className="text-2xl font-mono font-bold text-[var(--text-primary)]">
-              {stanzas}
+            <span className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400">
+              {stanzasCount}
             </span>
             <span className="block text-[11px] uppercase tracking-wider text-[var(--text-muted)] mt-1 font-medium">
               Estrofas
@@ -112,6 +101,50 @@ export const PoemStatsModal: React.FC<PoemStatsModalProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Stanzas Breakdown */}
+        {stanzas.length > 0 && (
+          <div
+            className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-col gap-2.5"
+            data-testid="stats-stanzas-breakdown"
+          >
+            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+              <span>Medida de Estrofas</span>
+              <span className="font-mono text-purple-600 dark:text-purple-400">
+                {stanzas.length} {stanzas.length === 1 ? 'estrofa' : 'estrofas'}
+              </span>
+            </div>
+
+            <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+              {stanzas.map(st => (
+                <div
+                  key={st.index}
+                  className="flex items-center justify-between p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-mono text-[11px]">
+                      E{st.index}
+                    </span>
+                    <span className="font-medium text-[var(--text-primary)]">
+                      {st.traditionalName}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    {st.rhymeScheme && (
+                      <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400">
+                        {st.rhymeScheme}
+                      </span>
+                    )}
+                    <span className="font-mono font-bold px-2 py-0.5 rounded bg-[var(--bg-primary)] text-indigo-600 dark:text-indigo-400 border border-[var(--border-color)]">
+                      {st.verseCount} {st.verseCount === 1 ? 'verso' : 'versos'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Structure Breakdown */}
         <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-col gap-2">

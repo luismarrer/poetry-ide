@@ -1,7 +1,7 @@
 import React from 'react';
 import type { VerseAnalysis } from '@/poetry/meter/analyzeVerse';
 import { formatRhythmicAccents } from '@/poetry/rhythm/accents';
-import { Sparkles, Sliders, RotateCcw, Info, Music } from 'lucide-react';
+import { Sparkles, Sliders, RotateCcw, Info, Music, Layers } from 'lucide-react';
 import { RhymeSuggester } from './RhymeSuggester';
 
 interface VerseInspectorProps {
@@ -150,7 +150,7 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
         <div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)]">
               Verso {verse.lineIndex + 1}
             </span>
@@ -160,6 +160,15 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
                 data-testid="inspector-version-badge"
               >
                 {versionName}
+              </span>
+            )}
+            {verse.stanzaInfo && (
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
+                data-testid="inspector-stanza-badge"
+                title={`Estrofa ${verse.stanzaInfo.stanzaIndex} mide ${verse.stanzaInfo.stanzaVerseCount} versos (${verse.stanzaInfo.traditionalName})`}
+              >
+                Estrofa {verse.stanzaInfo.stanzaIndex}: {verse.stanzaInfo.stanzaVerseCount} versos
               </span>
             )}
           </div>
@@ -209,6 +218,53 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
           <div className="font-medium">
             Con tus decisiones: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{verse.metricSyllables}</span> sílabas
           </div>
+        </div>
+      )}
+
+      {/* Stanza Measurement Card */}
+      {verse.stanzaInfo && (
+        <div
+          className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-col gap-2.5"
+          data-testid="inspector-stanza-card"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-secondary)]">
+                Estrofa {verse.stanzaInfo.stanzaIndex} de {verse.stanzaInfo.totalStanzas}
+              </span>
+            </div>
+            <span
+              className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
+              data-testid="inspector-stanza-verse-count"
+            >
+              {verse.stanzaInfo.stanzaVerseCount} {verse.stanzaInfo.stanzaVerseCount === 1 ? 'verso' : 'versos'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-0.5 text-xs">
+            <div className="p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-color)]">
+              <span className="text-[var(--text-muted)] block text-[10px]">Estructura</span>
+              <span className="font-semibold text-[var(--text-primary)]">
+                {verse.stanzaInfo.traditionalName}
+              </span>
+            </div>
+            <div className="p-2 rounded bg-[var(--bg-surface)] border border-[var(--border-color)]">
+              <span className="text-[var(--text-muted)] block text-[10px]">Posición en Estrofa</span>
+              <span className="font-semibold text-[var(--text-primary)]">
+                Verso {verse.stanzaInfo.verseInStanza} de {verse.stanzaInfo.stanzaVerseCount}
+              </span>
+            </div>
+          </div>
+
+          {verse.stanzaInfo.stanzaRhymeScheme && (
+            <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)]">
+              <span className="text-[10px] text-[var(--text-muted)]">Rima de la estrofa</span>
+              <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                {verse.stanzaInfo.stanzaRhymeScheme}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

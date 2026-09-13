@@ -5,6 +5,7 @@ import { applySynalephaOverrides, type VerseOverride } from './overrides';
 import { computeRhythmicAccents } from '../rhythm/accents';
 import { extractRhymeFromWord, type RhymeEnding } from '../rhyme/extractRhyme';
 import type { WordAnalysis, StressType } from '../syllabification/types';
+import type { VerseStanzaInfo } from '../stanzas/types';
 
 export interface Diagnostic {
   id: string
@@ -31,6 +32,7 @@ export interface VerseAnalysis {
   rhythmicAccents: number[]
   rhymeEnding?: RhymeEnding
   rhymeSymbol?: string
+  stanzaInfo?: VerseStanzaInfo
   diagnostics: Diagnostic[]
 }
 

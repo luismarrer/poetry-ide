@@ -57,10 +57,28 @@ class MetricGutterMarker extends GutterMarker {
       ? 'poetry-gutter-item poetry-gutter-spacer opacity-0'
       : 'poetry-gutter-item';
 
+    // 0. Stanza pill on stanza start
+    if (!this.isSpacer && this.verse?.stanzaInfo?.isStanzaStart) {
+      const stanzaPill = document.createElement('span');
+      stanzaPill.className = 'poetry-gutter-stanza-pill';
+      stanzaPill.textContent = `E${this.verse.stanzaInfo.stanzaIndex}`;
+      stanzaPill.title = `Estrofa ${this.verse.stanzaInfo.stanzaIndex}: mide ${this.verse.stanzaInfo.stanzaVerseCount} versos (${this.verse.stanzaInfo.traditionalName})`;
+      stanzaPill.dataset.testid = `gutter-stanza-pill-${this.verse.stanzaInfo.stanzaIndex}`;
+      container.appendChild(stanzaPill);
+    } else if (this.isSpacer) {
+      const stanzaPill = document.createElement('span');
+      stanzaPill.className = 'poetry-gutter-stanza-pill opacity-0';
+      stanzaPill.textContent = 'E1';
+      container.appendChild(stanzaPill);
+    }
+
     // 1. Line number
     const numSpan = document.createElement('span');
     numSpan.className = 'poetry-gutter-line-num';
     numSpan.textContent = String(this.lineNumber);
+    if (!this.isSpacer && this.verse?.stanzaInfo) {
+      numSpan.title = `Verso ${this.lineNumber} · Estrofa ${this.verse.stanzaInfo.stanzaIndex} (${this.verse.stanzaInfo.stanzaVerseCount} versos · v. ${this.verse.stanzaInfo.verseInStanza}/${this.verse.stanzaInfo.stanzaVerseCount})`;
+    }
     container.appendChild(numSpan);
 
     // 2. Syllable count badge

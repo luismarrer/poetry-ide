@@ -32,6 +32,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           <>
             <span>V. {activeVerse.lineIndex + 1}</span>
             <span className="text-[var(--border-color)]">|</span>
+            {activeVerse.stanzaInfo && (
+              <>
+                <span
+                  className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-800/40"
+                  title={`Estrofa ${activeVerse.stanzaInfo.stanzaIndex} mide ${activeVerse.stanzaInfo.stanzaVerseCount} versos (${activeVerse.stanzaInfo.traditionalName}) · Posición: verso ${activeVerse.stanzaInfo.verseInStanza} de ${activeVerse.stanzaInfo.stanzaVerseCount}`}
+                  data-testid="status-bar-stanza-info"
+                >
+                  Estrofa {activeVerse.stanzaInfo.stanzaIndex}: {activeVerse.stanzaInfo.stanzaVerseCount} versos ({activeVerse.stanzaInfo.verseInStanza}/{activeVerse.stanzaInfo.stanzaVerseCount})
+                </span>
+                <span className="text-[var(--border-color)]">|</span>
+              </>
+            )}
             <span className="font-medium text-[var(--text-primary)]">
               {activeVerse.metricSyllables} sílabas
             </span>
@@ -62,6 +74,14 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           <span className="text-indigo-600 dark:text-indigo-400 font-medium">
             {summary.conformancePercentage}% en silva ({summary.heptasyllables + summary.endecasyllables}/{summary.totalVerses})
           </span>
+        )}
+        {activeVerse?.stanzaInfo && (
+          <>
+            <span className="text-[var(--text-muted)]">
+              {activeVerse.stanzaInfo.totalStanzas} {activeVerse.stanzaInfo.totalStanzas === 1 ? 'estrofa' : 'estrofas'}
+            </span>
+            <span className="text-[var(--border-color)]">·</span>
+          </>
         )}
         <span className="text-[var(--text-muted)]">
           {summary.totalVerses} {summary.totalVerses === 1 ? 'verso' : 'versos'}
