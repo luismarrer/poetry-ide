@@ -41,8 +41,8 @@ das a la hirviente cuba.`,
 };
 
 export const SAMPLE_TITLES: Record<string, string> = {
-  userCorpus: 'Corpus de prueba',
   silvaGongora: 'Soledad primera (Luis de Góngora)',
   silvaBello: 'Silva a la agricultura (Andrés Bello)',
+  userCorpus: 'Corpus contemporáneo (verso libre)',
   blank: '',
 };

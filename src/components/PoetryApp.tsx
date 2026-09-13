@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { analyzePoem, type PoemAnalysisResult } from '@/poetry/index';
+import { analyzePoem, type PoemAnalysisResult, reconcileOverrides } from '@/poetry/index';
 import type { FormId } from '@/poetry/forms/types';
 import type { PoemVersion } from '@/poetry/versions/types';
 import { createNewVersion } from '@/poetry/versions/types';
+import {
+  saveProjectState,
+  STORAGE_KEY,
+  SESSION_BACKUP_KEY,
+  type SaveStatus,
+  type PoetryProjectBackup,
+} from '@/poetry/storage/projectStorage';
 import { PoetryEditor } from './editor/PoetryEditor';
 import { SplitPoetryEditor } from './editor/SplitPoetryEditor';
 import { VersionTabsBar } from './editor/VersionTabsBar';
@@ -10,18 +17,18 @@ import { VerseInspector } from './inspector/VerseInspector';
 import { TopBar } from './topbar/TopBar';
 import { StatusBar } from './statusbar/StatusBar';
 import { PoemStatsModal } from './stats/PoemStatsModal';
+import { ExportModal } from './export/ExportModal';
+import { ImportModal } from './export/ImportModal';
 import { SAMPLE_POEMS, SAMPLE_TITLES } from '@/data/samplePoems';
 
-const STORAGE_KEY = 'poetry_ide_state_v1';
-
 export const PoetryApp: React.FC = () => {
-  // 1. Core State
-  const [title, setTitle] = useState<string>(SAMPLE_TITLES.userCorpus);
+  // 1. Core State — Starts with classic 100% Silva and demonstrates metric decisions cleanly
+  const [title, setTitle] = useState<string>(SAMPLE_TITLES.silvaGongora);
   const [versions, setVersions] = useState<PoemVersion[]>([
     {
       id: 'v1',
       name: 'Versión 1',
-      text: SAMPLE_POEMS.userCorpus,
+      text: SAMPLE_POEMS.silvaGongora,
       overrides: {},
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -40,12 +47,21 @@ export const PoetryApp: React.FC = () => {
   const [rhymeMode, setRhymeMode] = useState<'consonant' | 'assonant'>('consonant');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [isImportOpen, setIsImportOpen] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | undefined>();
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // 2. Load from localStorage on client mount
+  // 2. Load from localStorage or sessionStorage backup on client mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      let saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved && typeof window !== 'undefined' && window.sessionStorage) {
+        saved = window.sessionStorage.getItem(SESSION_BACKUP_KEY);
+      }
+
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed.title === 'string') setTitle(parsed.title);
@@ -92,7 +108,7 @@ export const PoetryApp: React.FC = () => {
         }
       }
     } catch {
-      // ignore parsing errors
+      // ignore initial parsing errors
     }
     setIsLoaded(true);
   }, []);
@@ -109,15 +125,15 @@ export const PoetryApp: React.FC = () => {
     return alternative || primaryVersion;
   }, [versions, secondaryVersionId, primaryVersion]);
 
-  // 3. Save to localStorage when state changes
+  // 3. Save state when state changes (never silent: reports error and keeps session backup)
   useEffect(() => {
     if (!isLoaded) return;
-    try {
-      const payload = {
+    setSaveStatus('saving');
+
+    const timeout = setTimeout(() => {
+      const res = saveProjectState({
         title,
-        text: primaryVersion.text, // backwards-compatible root property
         formId,
-        overrides: primaryVersion.overrides,
         showSynalephas,
         showRhyme,
         rhymeMode,
@@ -126,14 +142,21 @@ export const PoetryApp: React.FC = () => {
         activeVersionId,
         secondaryVersionId,
         isSplitView,
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch {
-      // ignore storage errors
-    }
+      });
+
+      if (res.success) {
+        setSaveStatus('saved');
+        setSaveErrorMessage(undefined);
+        setLastSavedTime(new Date());
+      } else {
+        setSaveStatus('error');
+        setSaveErrorMessage(res.error);
+      }
+    }, 150);
+
+    return () => clearTimeout(timeout);
   }, [
     title,
-    primaryVersion,
     formId,
     showSynalephas,
     showRhyme,
@@ -177,20 +200,38 @@ export const PoetryApp: React.FC = () => {
       typeof activeVersion.overrides[activeLineIndex].manualMetricCount === 'number')
   );
 
-  // 6. Action Handlers for Version Text & Overrides
+  // 6. Action Handlers for Version Text & Overrides (Protected from line shifts)
   const handleUpdateText = useCallback((versionId: string, newText: string) => {
     setVersions(prev =>
-      prev.map(v => (v.id === versionId ? { ...v, text: newText, updatedAt: Date.now() } : v))
+      prev.map(v => {
+        if (v.id !== versionId) return v;
+        if (v.text === newText) return v;
+        const nextOverrides = reconcileOverrides(v.text, newText, v.overrides);
+        return {
+          ...v,
+          text: newText,
+          overrides: nextOverrides,
+          updatedAt: Date.now(),
+        };
+      })
     );
   }, []);
 
   const handleToggleSynalepha = useCallback(
-    (lineIndex: number, synId: string, currentActive: boolean) => {
+    (lineIndex: number, synId: string, currentActive: boolean, pairKey?: string) => {
       setVersions(prev => {
         return prev.map(v => {
           if (v.id !== activeVersion.id) return v;
           const existingVerse = v.overrides[lineIndex] || {};
           const existingSyns = existingVerse.synalephas || {};
+          const nextSyns = {
+            ...existingSyns,
+            [synId]: !currentActive,
+          };
+          if (pairKey) {
+            nextSyns[pairKey] = !currentActive;
+          }
+
           return {
             ...v,
             updatedAt: Date.now(),
@@ -198,10 +239,7 @@ export const PoetryApp: React.FC = () => {
               ...v.overrides,
               [lineIndex]: {
                 ...existingVerse,
-                synalephas: {
-                  ...existingSyns,
-                  [synId]: !currentActive,
-                },
+                synalephas: nextSyns,
               },
             },
           };
@@ -261,7 +299,9 @@ export const PoetryApp: React.FC = () => {
           if (activeLineIndex >= 0 && activeLineIndex < lines.length) {
             const line = lines[activeLineIndex];
             lines[activeLineIndex] = line.trim().length > 0 ? `${line.trimEnd()} ${word}` : word;
-            return { ...v, text: lines.join('\n'), updatedAt: Date.now() };
+            const newText = lines.join('\n');
+            const nextOverrides = reconcileOverrides(v.text, newText, v.overrides);
+            return { ...v, text: newText, overrides: nextOverrides, updatedAt: Date.now() };
           }
           return v;
         });
@@ -269,6 +309,34 @@ export const PoetryApp: React.FC = () => {
     },
     [activeVersion.id, activeLineIndex]
   );
+
+  const handleRestoreProject = useCallback((backup: PoetryProjectBackup) => {
+    if (backup.title) setTitle(backup.title);
+    if (backup.formId) setFormId(backup.formId);
+    if (typeof backup.showSynalephas === 'boolean') setShowSynalephas(backup.showSynalephas);
+    if (typeof backup.showRhyme === 'boolean') setShowRhyme(backup.showRhyme);
+    if (backup.rhymeMode) setRhymeMode(backup.rhymeMode);
+    if (backup.theme) setTheme(backup.theme);
+    if (Array.isArray(backup.versions) && backup.versions.length > 0) {
+      setVersions(backup.versions);
+      setActiveVersionId(backup.activeVersionId || backup.versions[0].id);
+      if (backup.secondaryVersionId) {
+        setSecondaryVersionId(backup.secondaryVersionId);
+      } else if (backup.versions.length > 1) {
+        setSecondaryVersionId(backup.versions[1].id);
+      }
+      if (typeof backup.isSplitView === 'boolean') setIsSplitView(backup.isSplitView);
+    }
+    setActiveLineIndexPrimary(0);
+  }, []);
+
+  const handleImportTextAsVersion = useCallback((filename: string, text: string) => {
+    const cleanName = filename.replace(/\.[^/.]+$/, '').trim() || 'Poema importado';
+    const newVer = createNewVersion(cleanName, text);
+    setVersions(prev => [...prev, newVer]);
+    setActiveVersionId(newVer.id);
+    setActiveLineIndexPrimary(0);
+  }, []);
 
   // 7. Version Management Handlers
   const handleCreateVersion = useCallback(() => {
@@ -380,6 +448,11 @@ export const PoetryApp: React.FC = () => {
         onToggleTheme={handleToggleTheme}
         onOpenStats={() => setIsStatsOpen(true)}
         onLoadSample={handleLoadSample}
+        saveStatus={saveStatus}
+        saveErrorMessage={saveErrorMessage}
+        lastSavedTime={lastSavedTime}
+        onOpenExport={() => setIsExportOpen(true)}
+        onOpenImport={() => setIsImportOpen(true)}
       />
 
       {/* Version Tabs Bar */}
@@ -472,6 +545,36 @@ export const PoetryApp: React.FC = () => {
         formId={formId}
         rhymeMode={rhymeMode}
         analysis={activeAnalysis}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        title={title}
+        formId={formId}
+        analysis={activeAnalysis}
+        projectState={{
+          title,
+          formId,
+          showSynalephas,
+          showRhyme,
+          rhymeMode,
+          theme,
+          versions,
+          activeVersionId,
+          secondaryVersionId,
+          isSplitView,
+        }}
+        activeVersion={activeVersion}
+      />
+
+      {/* Import / Recovery Modal */}
+      <ImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onRestoreProject={handleRestoreProject}
+        onImportTextAsVersion={handleImportTextAsVersion}
       />
     </div>
   );

@@ -11,7 +11,7 @@ interface VerseInspectorProps {
   rhymeMode?: 'consonant' | 'assonant'
   onRhymeModeChange?: (mode: 'consonant' | 'assonant') => void
   onInsertWord?: (word: string) => void
-  onToggleSynalepha: (lineIndex: number, synalephaId: string, currentActive: boolean) => void
+  onToggleSynalepha: (lineIndex: number, synalephaId: string, currentActive: boolean, pairKey?: string) => void
   onSetManualCount: (lineIndex: number, count?: number) => void
   onResetVerseOverrides: (lineIndex: number) => void
 }
@@ -312,7 +312,13 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
                   </span>
                 </div>
                 <button
-                  onClick={() => onToggleSynalepha(verse.lineIndex, syn.id, syn.active)}
+                  onClick={() => {
+                    const pairKey =
+                      syn.wordA && syn.wordB
+                        ? `${syn.wordA.toLowerCase()}_${syn.wordB.toLowerCase()}`
+                        : undefined;
+                    onToggleSynalepha(verse.lineIndex, syn.id, syn.active, pairKey);
+                  }}
                   className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                     syn.active
                       ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-300 border border-indigo-600/30 hover:bg-indigo-600/20'

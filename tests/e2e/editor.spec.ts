@@ -248,4 +248,82 @@ test.describe('Poetry IDE E2E Suite', () => {
     // Line 3 returns to '—'
     await expect(gutterItems.nth(2).locator('.poetry-gutter-rhyme')).toContainText('—');
   });
+
+  test('welcomes user with clean first-run experience (Góngora in Silva with 100% compliance)', async ({ page }) => {
+    // Check title in top bar
+    const heading = page.locator('header');
+    await expect(heading).toContainText('Soledad primera (Luis de Góngora)');
+
+    // Check status bar shows 100% Silva compliance instead of 13% warnings
+    const statusBar = page.locator('[data-testid="status-bar"]');
+    await expect(statusBar).toBeVisible();
+    await expect(statusBar).toContainText('100% conformidad');
+    await expect(statusBar).toContainText('7 versos');
+
+    // Check visible save status indicator
+    const saveIndicator = page.locator('[data-testid="save-status-saved"]');
+    await expect(saveIndicator).toBeVisible();
+    await expect(saveIndicator).toContainText('Guardado');
+  });
+
+  test('opens export modal and supports text, manuscript, and json backup tabs', async ({ page }) => {
+    const exportBtn = page.locator('[data-testid="open-export-btn"]');
+    await expect(exportBtn).toBeVisible();
+    await exportBtn.click();
+
+    const exportModal = page.locator('[data-testid="export-modal"]');
+    await expect(exportModal).toBeVisible();
+    await expect(exportModal).toContainText('Exportar y Guardar Obra');
+
+    // Switch to manuscript tab
+    await page.locator('[data-testid="tab-export-manuscript"]').click();
+    await expect(exportModal).toContainText('Manuscrito métrico');
+    await expect(exportModal).toContainText('| N.º | Sílabas | Rima |');
+
+    // Switch to JSON backup tab
+    await page.locator('[data-testid="tab-export-json"]').click();
+    await expect(exportModal).toContainText('Copia de seguridad');
+    await expect(exportModal).toContainText('"app": "poetry-ide"');
+
+    // Test copy button
+    const copyBtn = page.locator('[data-testid="btn-copy-export"]');
+    await copyBtn.click();
+
+    // Close modal
+    await page.locator('[data-testid="close-export-modal-btn"]').click();
+    await expect(exportModal).not.toBeVisible();
+  });
+
+  test('protects metric overrides when inserting a new verse above', async ({ page }) => {
+    // Click on verse 3: "en soledad confusa," (which normally has 7 syllables)
+    const line3 = page.locator('.cm-line', { hasText: 'en soledad confusa' });
+    await line3.click();
+
+    // In inspector, adjust manual count to 8
+    const inspector = page.locator('[data-testid="verse-inspector"]');
+    await expect(inspector).toBeVisible();
+    await expect(inspector).toContainText('en soledad confusa');
+
+    const addCountBtn = inspector.getByTitle('Sumar 1 sílaba manualmente');
+    await addCountBtn.click();
+
+    // Gutter item for line 3 should now show 8
+    const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
+    await expect(gutterItems.nth(2)).toContainText('8');
+
+    // Now insert a new verse at the very top
+    const editor = page.locator('.cm-content');
+    await editor.click();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.insertText('// Nueva nota al inicio\n');
+
+    // Wait for reconciliation: the verse "en soledad confusa," is now line 4 (index 3)
+    // Its manual override of 8 must remain with it!
+    const updatedGutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
+    await expect(updatedGutterItems.nth(3)).toContainText('8');
+  });
 });

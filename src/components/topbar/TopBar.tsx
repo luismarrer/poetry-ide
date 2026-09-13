@@ -1,6 +1,21 @@
 import React from 'react';
 import type { FormId } from '@/poetry/forms/types';
-import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen, Music, Split } from 'lucide-react';
+import type { SaveStatus } from '@/poetry/storage/projectStorage';
+import {
+  Feather,
+  BarChart2,
+  Eye,
+  EyeOff,
+  Sun,
+  Moon,
+  BookOpen,
+  Music,
+  Split,
+  Download,
+  Upload,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface TopBarProps {
   title?: string
@@ -18,6 +33,11 @@ interface TopBarProps {
   onToggleTheme: () => void
   onOpenStats: () => void
   onLoadSample: (key: string) => void
+  saveStatus?: SaveStatus
+  saveErrorMessage?: string
+  lastSavedTime?: Date | null
+  onOpenExport?: () => void
+  onOpenImport?: () => void
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -36,10 +56,15 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleTheme,
   onOpenStats,
   onLoadSample,
+  saveStatus = 'saved',
+  saveErrorMessage,
+  lastSavedTime,
+  onOpenExport,
+  onOpenImport,
 }) => {
   return (
     <header className="h-14 px-3 sm:px-4 border-b border-[var(--border-color)] bg-[var(--bg-surface)] flex items-center justify-between gap-2 select-none z-10">
-      {/* Brand */}
+      {/* Brand & Save Status */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-indigo-600/10 dark:bg-indigo-400/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
           <Feather className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -57,6 +82,40 @@ export const TopBar: React.FC<TopBarProps> = ({
             Métrica prosódica en tiempo real
           </p>
         </div>
+
+        {/* Save Status Indicator */}
+        {saveStatus === 'saved' && (
+          <div
+            className="hidden lg:flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40"
+            title={`Guardado en el almacenamiento local de este navegador${lastSavedTime ? ` a las ${lastSavedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`}
+            data-testid="save-status-saved"
+          >
+            <Check className="w-3 h-3" />
+            <span>Guardado</span>
+          </div>
+        )}
+
+        {saveStatus === 'saving' && (
+          <div
+            className="hidden lg:flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40 animate-pulse"
+            data-testid="save-status-saving"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+            <span>Guardando...</span>
+          </div>
+        )}
+
+        {saveStatus === 'error' && (
+          <button
+            onClick={onOpenExport}
+            className="flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300 font-medium px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 hover:bg-amber-200 transition-colors cursor-pointer"
+            title={saveErrorMessage || 'Error al guardar en el navegador. Haz clic aquí para exportar tu obra.'}
+            data-testid="save-status-error"
+          >
+            <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+            <span>Error al guardar — Exportar</span>
+          </button>
+        )}
       </div>
 
       {/* Center Controls: Structure & Synalephas */}
@@ -166,17 +225,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             <option value="" disabled>
               Ejemplos...
             </option>
-            <option value="userCorpus">Corpus de prueba</option>
-            <option value="silvaGongora">Silva (Luis de Góngora)</option>
+            <option value="silvaGongora">Soledad primera (Luis de Góngora)</option>
             <option value="silvaBello">Silva a la agricultura (Bello)</option>
+            <option value="userCorpus">Corpus contemporáneo (verso libre)</option>
             <option value="blank">Lienzo en blanco</option>
           </select>
           <BookOpen className="w-3 h-3 text-[var(--text-muted)] absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
-      {/* Right Controls: Split View, Stats & Theme */}
-      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+      {/* Right Controls: Split View, Export, Import, Stats & Theme */}
+      <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
         {onToggleSplitView && (
           <button
             onClick={onToggleSplitView}
@@ -193,9 +252,33 @@ export const TopBar: React.FC<TopBarProps> = ({
           </button>
         )}
 
+        {onOpenExport && (
+          <button
+            onClick={onOpenExport}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-colors"
+            title="Exportar poema (.txt, manuscrito métrico .md o copia de seguridad .json)"
+            data-testid="open-export-btn"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span className="hidden md:inline">Exportar</span>
+          </button>
+        )}
+
+        {onOpenImport && (
+          <button
+            onClick={onOpenImport}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-colors"
+            title="Cargar archivo de poema o restaurar copia de seguridad"
+            data-testid="open-import-btn"
+          >
+            <Upload className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span className="hidden md:inline">Cargar</span>
+          </button>
+        )}
+
         <button
           onClick={onOpenStats}
-          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-colors"
+          className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-colors"
           title="Ver estadísticas poéticas"
           data-testid="open-stats-btn"
         >
