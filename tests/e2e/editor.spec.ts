@@ -2,9 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Poetry IDE E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+    });
     // Open app
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await expect(page.locator('.cm-content')).toBeVisible();
+    await expect(page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)').first()).toBeVisible();
   });
 
   test('loads Poetry IDE with editor, gutter, inspector, and status bar', async ({ page }) => {
@@ -34,6 +38,34 @@ test.describe('Poetry IDE E2E Suite', () => {
     const secondGutterItem = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)').nth(1);
     await expect(secondGutterItem).toContainText('2');
     await expect(secondGutterItem).toContainText('11 ✓');
+  });
+
+  test('gutter displays rhyme scheme alongside syllables and toggles on/off', async ({ page }) => {
+    // Select sample poem "Silva (Luis de Góngora)"
+    await page.selectOption('[data-testid="sample-poems-select"]', 'silvaGongora');
+
+    const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
+    await expect(gutterItems.nth(0)).toContainText('1');
+    await expect(gutterItems.nth(0)).toContainText('11 ✓');
+    await expect(gutterItems.nth(0).locator('.poetry-gutter-rhyme')).toContainText('A');
+
+    await expect(gutterItems.nth(1).locator('.poetry-gutter-rhyme')).toContainText('B');
+    await expect(gutterItems.nth(2).locator('.poetry-gutter-rhyme')).toContainText('b');
+    await expect(gutterItems.nth(3).locator('.poetry-gutter-rhyme')).toContainText('—');
+
+    // Hover over 'A' rhyme to test group hover
+    const rhymeA = gutterItems.nth(0).locator('.poetry-gutter-rhyme');
+    await rhymeA.hover();
+    await expect(page.locator('.poetry-rhyme-active')).toHaveCount(2);
+
+    // Toggle rhyme visibility off
+    const toggleRhymeBtn = page.locator('[data-testid="toggle-rhyme-vis"]');
+    await toggleRhymeBtn.click();
+    await expect(gutterItems.nth(0).locator('.poetry-gutter-rhyme')).toHaveCount(0);
+
+    // Toggle rhyme visibility back on
+    await toggleRhymeBtn.click();
+    await expect(gutterItems.nth(0).locator('.poetry-gutter-rhyme')).toContainText('A');
   });
 
   test('inspects active verse and shows syllable separation and accents', async ({ page }) => {

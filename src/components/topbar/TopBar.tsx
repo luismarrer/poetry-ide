@@ -1,12 +1,14 @@
 import React from 'react';
 import type { FormId } from '@/poetry/forms/types';
-import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen } from 'lucide-react';
+import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen, Music } from 'lucide-react';
 
 interface TopBarProps {
   formId: FormId
   onFormChange: (formId: FormId) => void
   showSynalephas: boolean
   onToggleShowSynalephas: () => void
+  showRhyme: boolean
+  onToggleShowRhyme: () => void
   theme: 'light' | 'dark'
   onToggleTheme: () => void
   onOpenStats: () => void
@@ -18,6 +20,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onFormChange,
   showSynalephas,
   onToggleShowSynalephas,
+  showRhyme,
+  onToggleShowRhyme,
   theme,
   onToggleTheme,
   onOpenStats,
@@ -82,6 +86,22 @@ export const TopBar: React.FC<TopBarProps> = ({
           {showSynalephas ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
           <span className="hidden sm:inline">Sinalefas</span>
           <span className="font-mono text-sm leading-none -mt-0.5">‿</span>
+        </button>
+
+        {/* Rhyme toggle */}
+        <button
+          onClick={onToggleShowRhyme}
+          className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium border transition-colors flex-shrink-0 ${
+            showRhyme
+              ? 'bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50'
+              : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:text-[var(--text-primary)]'
+          }`}
+          title="Mostrar u ocultar la rima en el margen del editor"
+          data-testid="toggle-rhyme-vis"
+        >
+          <Music className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Rima</span>
+          <span className="font-mono text-xs font-bold -mt-0.5">Aa</span>
         </button>
 
         {/* Sample Poems */}

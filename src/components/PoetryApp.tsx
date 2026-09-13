@@ -17,6 +17,7 @@ export const PoetryApp: React.FC = () => {
   const [formId, setFormId] = useState<FormId>('silva');
   const [overrides, setOverrides] = useState<PoemOverrides>({});
   const [showSynalephas, setShowSynalephas] = useState<boolean>(true);
+  const [showRhyme, setShowRhyme] = useState<boolean>(true);
   const [activeLineIndex, setActiveLineIndex] = useState<number>(0);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
@@ -32,6 +33,7 @@ export const PoetryApp: React.FC = () => {
         if (parsed.formId === 'libre' || parsed.formId === 'silva') setFormId(parsed.formId);
         if (parsed.overrides) setOverrides(parsed.overrides);
         if (typeof parsed.showSynalephas === 'boolean') setShowSynalephas(parsed.showSynalephas);
+        if (typeof parsed.showRhyme === 'boolean') setShowRhyme(parsed.showRhyme);
         if (parsed.theme === 'light' || parsed.theme === 'dark') setTheme(parsed.theme);
       } else {
         // Default to dark theme if system prefers dark
@@ -54,13 +56,14 @@ export const PoetryApp: React.FC = () => {
         formId,
         overrides,
         showSynalephas,
+        showRhyme,
         theme,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // ignore storage errors
     }
-  }, [text, formId, overrides, showSynalephas, theme, isLoaded]);
+  }, [text, formId, overrides, showSynalephas, showRhyme, theme, isLoaded]);
 
   // 4. Sync theme class on HTML document
   useEffect(() => {
@@ -150,6 +153,8 @@ export const PoetryApp: React.FC = () => {
         onFormChange={setFormId}
         showSynalephas={showSynalephas}
         onToggleShowSynalephas={() => setShowSynalephas(s => !s)}
+        showRhyme={showRhyme}
+        onToggleShowRhyme={() => setShowRhyme(r => !r)}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenStats={() => setIsStatsOpen(true)}
@@ -166,6 +171,7 @@ export const PoetryApp: React.FC = () => {
             verses={analysis.verses}
             formId={formId}
             showSynalephas={showSynalephas}
+            showRhyme={showRhyme}
             onActiveVerseChange={setActiveLineIndex}
           />
         </main>

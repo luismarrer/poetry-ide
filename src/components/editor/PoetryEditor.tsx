@@ -14,6 +14,7 @@ interface PoetryEditorProps {
   verses: VerseAnalysis[]
   formId: FormId
   showSynalephas: boolean
+  showRhyme: boolean
   onActiveVerseChange: (lineIndex: number) => void
 }
 
@@ -23,6 +24,7 @@ export const PoetryEditor: React.FC<PoetryEditorProps> = ({
   verses,
   formId,
   showSynalephas,
+  showRhyme,
   onActiveVerseChange,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,18 +78,18 @@ export const PoetryEditor: React.FC<PoetryEditorProps> = ({
     }
   }, [value]);
 
-  // Dispatch updated gutter data whenever verses or formId changes
+  // Dispatch updated gutter data whenever verses, formId, or showRhyme changes
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
 
     view.dispatch({
       effects: [
-        setGutterDataEffect.of({ verses, formId }),
+        setGutterDataEffect.of({ verses, formId, showRhyme }),
         setSynalephaConfigEffect.of({ show: showSynalephas, verses }),
       ],
     });
-  }, [verses, formId, showSynalephas]);
+  }, [verses, formId, showSynalephas, showRhyme]);
 
   return (
     <div
