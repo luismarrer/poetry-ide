@@ -164,9 +164,7 @@ test.describe('Poetry IDE E2E Suite', () => {
     // Focus editor and write comment line, heading line, and verse
     const editor = page.locator('.cm-content');
     await editor.click();
-    await page.keyboard.insertText('// Borrador inicial de versos\n');
-    await page.keyboard.insertText('# Estrofa I\n');
-    await page.keyboard.insertText('Escribo verso feo');
+    await page.keyboard.insertText('// Borrador inicial de versos\n# Estrofa I\nEscribo verso feo');
 
     // Verify gutter for comment (line 1), heading (line 2), and verse (line 3)
     const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
@@ -192,9 +190,7 @@ test.describe('Poetry IDE E2E Suite', () => {
     // Type 3 verses: musa (11), confusa (7), luna (11)
     const editor = page.locator('.cm-content');
     await editor.click();
-    await page.keyboard.insertText('cuantos me dictó versos dulce musa\n');
-    await page.keyboard.insertText('en soledad confusa\n');
-    await page.keyboard.insertText('bajo la clara lumbre de la luna');
+    await page.keyboard.insertText('cuantos me dictó versos dulce musa\nen soledad confusa\nbajo la clara lumbre de la luna');
 
     const gutterItems = page.locator('.poetry-gutter-item:not(.poetry-gutter-spacer)');
 

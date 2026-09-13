@@ -1,6 +1,6 @@
 import React from 'react';
 import type { FormId } from '@/poetry/forms/types';
-import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen, Music } from 'lucide-react';
+import { Feather, BarChart2, Eye, EyeOff, Sun, Moon, BookOpen, Music, Split } from 'lucide-react';
 
 interface TopBarProps {
   title?: string
@@ -12,6 +12,8 @@ interface TopBarProps {
   onToggleShowRhyme: () => void
   rhymeMode?: 'consonant' | 'assonant'
   onRhymeModeChange?: (mode: 'consonant' | 'assonant') => void
+  isSplitView?: boolean
+  onToggleSplitView?: () => void
   theme: 'light' | 'dark'
   onToggleTheme: () => void
   onOpenStats: () => void
@@ -28,6 +30,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleShowRhyme,
   rhymeMode = 'consonant',
   onRhymeModeChange,
+  isSplitView = false,
+  onToggleSplitView,
   theme,
   onToggleTheme,
   onOpenStats,
@@ -171,8 +175,24 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      {/* Right Controls: Stats & Theme */}
+      {/* Right Controls: Split View, Stats & Theme */}
       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        {onToggleSplitView && (
+          <button
+            onClick={onToggleSplitView}
+            className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+              isSplitView
+                ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800 font-semibold shadow-xs'
+                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-color)]'
+            }`}
+            title="Abrir dos versiones simultáneamente en pantalla dividida"
+            data-testid="topbar-split-view-btn"
+          >
+            <Split className="w-3.5 h-3.5" />
+            <span className="hidden xl:inline">{isSplitView ? 'Cerrar división' : 'Dos versiones'}</span>
+          </button>
+        )}
+
         <button
           onClick={onOpenStats}
           className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] transition-colors"

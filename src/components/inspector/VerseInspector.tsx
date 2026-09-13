@@ -7,6 +7,7 @@ import { RhymeSuggester } from './RhymeSuggester';
 interface VerseInspectorProps {
   verse?: VerseAnalysis
   hasOverrides: boolean
+  versionName?: string
   rhymeMode?: 'consonant' | 'assonant'
   onRhymeModeChange?: (mode: 'consonant' | 'assonant') => void
   onInsertWord?: (word: string) => void
@@ -38,6 +39,7 @@ function getVerseTypeName(syllables: number): string {
 export const VerseInspector: React.FC<VerseInspectorProps> = ({
   verse,
   hasOverrides,
+  versionName,
   rhymeMode = 'consonant',
   onRhymeModeChange,
   onInsertWord,
@@ -148,9 +150,19 @@ export const VerseInspector: React.FC<VerseInspectorProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
         <div>
-          <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)]">
-            Verso {verse.lineIndex + 1}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)]">
+              Verso {verse.lineIndex + 1}
+            </span>
+            {versionName && (
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50"
+                data-testid="inspector-version-badge"
+              >
+                {versionName}
+              </span>
+            )}
+          </div>
           <h2 className="text-lg font-bold text-[var(--text-primary)]">
             {getVerseTypeName(verse.metricSyllables)}
           </h2>
