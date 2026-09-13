@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { VerseAnalysis } from '@/poetry/meter/analyzeVerse';
-import { poeticDictionary, type PoeticWordEntry } from '@/poetry/rhyme/poeticDictionary';
+import { poeticDictionary } from '@/poetry/rhyme/poeticDictionary';
 import { Sparkles, Search, Copy, Check, Plus, Filter, HelpCircle } from 'lucide-react';
 
 interface RhymeSuggesterProps {

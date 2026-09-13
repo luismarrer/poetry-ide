@@ -10,7 +10,6 @@ export function getTraditionalStanzaName(
   rhymeScheme: string = '',
   verses: VerseAnalysis[] = []
 ): string {
-  const isArteMayor = verses.some(v => v.metricSyllables >= 9);
   const isArteMenor = verses.length > 0 && verses.every(v => v.metricSyllables <= 8);
   const cleanScheme = rhymeScheme.replace(/[^A-Za-z—]/g, '');
 

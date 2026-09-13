@@ -181,12 +181,13 @@ export function parseProjectBackup(
     }
 
     // Normalize legacy backup if needed
-    if (!Array.isArray(parsed.versions) && typeof parsed.text === 'string') {
+    const raw = parsed as Record<string, any>;
+    if (!Array.isArray(raw.versions) && typeof raw.text === 'string') {
       const legacyVersion: PoemVersion = {
         id: 'v1',
         name: 'Versión 1',
-        text: parsed.text,
-        overrides: parsed.overrides || {},
+        text: raw.text,
+        overrides: raw.overrides || {},
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };
